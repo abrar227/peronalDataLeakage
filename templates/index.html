@@ -237,6 +237,8 @@ let output = `
   });
 
   document.getElementById("result").innerHTML = output || "✅ No sensitive data found";
+  document.getElementById("result").innerHTML =
+  `<h3>⚠️ Risk Level: ${data.risk_level}</h3>` + output;
 }
 </script>
 

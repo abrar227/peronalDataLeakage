@@ -1,0 +1,33 @@
+body {
+    font-family: Arial;
+    padding: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+}
+
+#resultBox {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+/* Highlight styles */
+.highlight {
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.email { background: #ffcccc; }
+.phone { background: #cce5ff; }
+.name { background: #d4edda; }
+.org { background: #fff3cd; }
+.location { background: #e2d6f3; }
