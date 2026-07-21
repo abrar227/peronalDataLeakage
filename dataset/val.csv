@@ -1,0 +1,7 @@
+text,label,category
+"My SSN is 123-45-6789, please keep it confidential",sensitive,PII
+My email is john.doe@gmail.com and my phone is 987-654-3210,sensitive,PII
+The keynote speaker was well received by the audience,non-sensitive,none
+I really enjoyed the movie we watched last weekend,non-sensitive,none
+"Bank account number: 000123456789, IFSC: HDFC0001234",sensitive,financial
+"Here is my UPI PIN: 4521, please don't share it",sensitive,credentials

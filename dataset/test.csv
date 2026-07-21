@@ -1,0 +1,7 @@
+text,label,category
+API key: sk_live_51Hn8x7ZQm29fkLp0wQe,sensitive,credentials
+"Employee ID 4521, DOB 14-02-1990, reporting to HR",sensitive,PII
+The Wi-Fi password for the office is Guest@2024,sensitive,credentials
+My driver's license number is D1234567 issued in California,sensitive,PII
+Please send the invoice to accounts@company.com by Friday,sensitive,PII
+My password for the admin panel is Summer2024!,sensitive,credentials
