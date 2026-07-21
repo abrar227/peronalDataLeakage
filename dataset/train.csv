@@ -1,0 +1,29 @@
+text,label,category
+The server root password is stored in config.env as DB_PASS,sensitive,credentials
+His Aadhaar number is 1234 5678 9012,sensitive,PII
+"My home address is 42 Lakeview Street, Springfield",sensitive,PII
+The conference room is booked from 2pm to 4pm,non-sensitive,none
+Please review the attached slide deck before the meeting,non-sensitive,none
+The weather today is sunny with a high of 28 degrees,non-sensitive,none
+The football match ended in a 2-1 victory for the home team,non-sensitive,none
+Patient John Smith was diagnosed with hypertension on 12/03/2023,sensitive,health
+My credit card number is 4111 1111 1111 1111 exp 12/26,sensitive,financial
+The library will be closed for renovations next month,non-sensitive,none
+Let's meet at the coffee shop near the office at 10am,non-sensitive,none
+The server uptime this month was 99.98 percent,non-sensitive,none
+Our team completed the sprint with all tasks closed,non-sensitive,none
+Login: admin@corp.com Password: Passw0rd123,sensitive,credentials
+"Salary details: Rahul earns ₹85,000 per month at TechCorp",sensitive,financial
+The recipe calls for two cups of flour and one egg,non-sensitive,none
+Team standup is moved to 9:30am starting tomorrow,non-sensitive,none
+The company picnic will be held at Central Park this year,non-sensitive,none
+Please find attached my passport number N1234567,sensitive,PII
+The new product launch is scheduled for next Tuesday,non-sensitive,none
+The quarterly sales report shows a 12% increase in revenue,non-sensitive,none
+We are hiring two new interns for the summer program,non-sensitive,none
+Our stock of office supplies needs to be restocked soon,non-sensitive,none
+Our marketing campaign increased website traffic by 20 percent,non-sensitive,none
+"Medical record: patient has type 2 diabetes, insulin dependent",sensitive,health
+Client's routing number is 021000021 for the wire transfer,sensitive,financial
+Remember to submit your timesheet by end of day Friday,non-sensitive,none
+Traffic on the highway was light this morning,non-sensitive,none
