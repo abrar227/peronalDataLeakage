@@ -1,29 +1,81 @@
 text,label,category
-The server root password is stored in config.env as DB_PASS,sensitive,credentials
-His Aadhaar number is 1234 5678 9012,sensitive,PII
-"My home address is 42 Lakeview Street, Springfield",sensitive,PII
-The conference room is booked from 2pm to 4pm,non-sensitive,none
-Please review the attached slide deck before the meeting,non-sensitive,none
-The weather today is sunny with a high of 28 degrees,non-sensitive,none
-The football match ended in a 2-1 victory for the home team,non-sensitive,none
-Patient John Smith was diagnosed with hypertension on 12/03/2023,sensitive,health
-My credit card number is 4111 1111 1111 1111 exp 12/26,sensitive,financial
-The library will be closed for renovations next month,non-sensitive,none
-Let's meet at the coffee shop near the office at 10am,non-sensitive,none
-The server uptime this month was 99.98 percent,non-sensitive,none
-Our team completed the sprint with all tasks closed,non-sensitive,none
-Login: admin@corp.com Password: Passw0rd123,sensitive,credentials
-"Salary details: Rahul earns ₹85,000 per month at TechCorp",sensitive,financial
-The recipe calls for two cups of flour and one egg,non-sensitive,none
-Team standup is moved to 9:30am starting tomorrow,non-sensitive,none
-The company picnic will be held at Central Park this year,non-sensitive,none
-Please find attached my passport number N1234567,sensitive,PII
-The new product launch is scheduled for next Tuesday,non-sensitive,none
-The quarterly sales report shows a 12% increase in revenue,non-sensitive,none
-We are hiring two new interns for the summer program,non-sensitive,none
 Our stock of office supplies needs to be restocked soon,non-sensitive,none
-Our marketing campaign increased website traffic by 20 percent,non-sensitive,none
-"Medical record: patient has type 2 diabetes, insulin dependent",sensitive,health
+We are proud to announce record customer satisfaction scores,non-sensitive,none
+The company blog published a new article on industry trends,non-sensitive,none
+"Temporary password issued: Xk9#mPq2, must be changed on first login",sensitive,credentials
+Team standup is moved to 9:30am starting tomorrow,non-sensitive,none
 Client's routing number is 021000021 for the wire transfer,sensitive,financial
-Remember to submit your timesheet by end of day Friday,non-sensitive,none
 Traffic on the highway was light this morning,non-sensitive,none
+You can email press@company.com for media inquiries,non-sensitive,none
+Follow our official page for updates on new releases,non-sensitive,none
+We are hiring two new interns for the summer program,non-sensitive,none
+His voter ID is ABC1234567 registered at the Kochi constituency,sensitive,PII
+"Our headquarters is located at 500 Market Street, San Francisco",non-sensitive,none
+The server root password is stored in config.env as DB_PASS,sensitive,credentials
+"Sample SSN format for the form is XXX-XX-XXXX, not an actual number",non-sensitive,none
+His annual bonus of 2.5 lakhs was credited to account ending 4532,sensitive,financial
+"The placeholder password field just shows dots, no real password is stored here",non-sensitive,none
+Our support email support@company.com typically replies within a day,non-sensitive,none
+Example API usage: api_key=YOUR_KEY_HERE in the documentation,non-sensitive,none
+"Card expiring soon: 5500 0000 0000 0004, CVV 123",sensitive,financial
+Please courier the documents to my residence at 15 Palm Grove Layout,sensitive,PII
+Please send the invoice to accounts@company.com by Friday,sensitive,PII
+Therapy session notes: patient reports anxiety related to work stress,sensitive,health
+Please transfer the funds to IBAN GB29NWBK60161331926819,sensitive,financial
+My password for the admin panel is Summer2024!,sensitive,credentials
+"Passport expiring: P1234567IND, please renew before travel",sensitive,PII
+Our marketing campaign increased website traffic by 20 percent,non-sensitive,none
+The company's stock price closed higher today after strong earnings,non-sensitive,none
+API key: sk_live_51Hn8x7ZQm29fkLp0wQe,sensitive,credentials
+The new product launch is scheduled for next Tuesday,non-sensitive,none
+The keynote speaker was well received by the audience,non-sensitive,none
+Let's meet at the coffee shop near the office at 10am,non-sensitive,none
+Our press kit includes generic company contact details for journalists,non-sensitive,none
+Customer complained: card 4012888888881881 was charged twice,sensitive,financial
+The quarterly sales report shows a 12% increase in revenue,non-sensitive,none
+The internal memo lists all employees' salaries in a shared spreadsheet,sensitive,financial
+The customer service hotline is open 24/7 for assistance,non-sensitive,none
+His PAN number is ABCDE1234F for the tax filing,sensitive,PII
+The new intern starts on Monday and will join the design team,non-sensitive,none
+"My home address is 42 Lakeview Street, Springfield",sensitive,PII
+"The warehouse address for returns is 100 Industrial Road, Unit 3",non-sensitive,none
+Quarterly all-hands meeting is scheduled for next Thursday,non-sensitive,none
+Our data retention policy is outlined in the employee handbook,non-sensitive,none
+"The patient's blood test shows elevated cholesterol, prescribed statins",sensitive,health
+"Here is my UPI PIN: 4521, please don't share it",sensitive,credentials
+Please note the client's SSN 987-65-4321 for the background check,sensitive,PII
+The library will be closed for renovations next month,non-sensitive,none
+The football match ended in a 2-1 victory for the home team,non-sensitive,none
+Employees can access the gym facility on the second floor,non-sensitive,none
+"Verification code sent to your phone: 483920, valid for 5 minutes",sensitive,credentials
+"My SSN is 123-45-6789, please keep it confidential",sensitive,PII
+The FAQ page explains how to reset your password using the app,non-sensitive,none
+This is a test transaction of $0.00 used only for sandbox testing,non-sensitive,none
+"For support, call our toll-free number 1-800-555-0199",non-sensitive,none
+Server login token: ghp_16C7e42F292c6912E7710c838347Ae178B4a,sensitive,credentials
+Root credentials: user=admin pass=Toor@123 for the production server,sensitive,credentials
+Please review the attached slide deck before the meeting,non-sensitive,none
+The company picnic will be held at Central Park this year,non-sensitive,none
+His health insurance claim references a recent cardiac procedure,sensitive,health
+Confidential: merger discussions include CFO's home number 9847123456,sensitive,PII
+The cafeteria menu has been updated with new vegetarian options,non-sensitive,none
+Login: admin@corp.com Password: Passw0rd123,sensitive,credentials
+"The office directory lists department extensions, not personal numbers",non-sensitive,none
+The conference room is booked from 2pm to 4pm,non-sensitive,none
+The tutorial uses a sample email like user@example.com for illustration,non-sensitive,none
+The Wi-Fi password for the office is Guest@2024,sensitive,credentials
+The server uptime this month was 99.98 percent,non-sensitive,none
+"Bank account number: 000123456789, IFSC: HDFC0001234",sensitive,financial
+My new PIN for the debit card is 7749,sensitive,credentials
+The lab report confirms a positive result requiring immediate treatment,sensitive,health
+Database connection string: postgres://admin:P@ssw0rd@db.internal:5432,sensitive,credentials
+Salary details: Rahul earns eighty five thousand rupees per month at TechCorp,sensitive,financial
+The onboarding form requires your Aadhaar 5678 1234 9087 and PAN,sensitive,PII
+The invoice template shows a placeholder amount of $100.00,non-sensitive,none
+Please find the meeting minutes attached for your reference,non-sensitive,none
+Contact billing@company.com if you have questions about your invoice,non-sensitive,none
+IP addresses like 127.0.0.1 are used for local testing only,non-sensitive,none
+"Medical record: patient has type 2 diabetes, insulin dependent",sensitive,health
+The annual report highlights growth across all business units,non-sensitive,none
+"Please update the shipping address to Flat 4B, Green Residency, Chennai",sensitive,PII
+Our new office is located near the Landmark on Park Avenue,non-sensitive,none

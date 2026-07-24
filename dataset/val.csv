@@ -1,7 +1,18 @@
 text,label,category
-"My SSN is 123-45-6789, please keep it confidential",sensitive,PII
+My date of birth is 14th February 1995 and I live at 12 Rose Avenue,sensitive,PII
 My email is john.doe@gmail.com and my phone is 987-654-3210,sensitive,PII
-The keynote speaker was well received by the audience,non-sensitive,none
+The IT team will perform scheduled maintenance this weekend,non-sensitive,none
+The onboarding guide explains how employee IDs are generated,non-sensitive,none
 I really enjoyed the movie we watched last weekend,non-sensitive,none
-"Bank account number: 000123456789, IFSC: HDFC0001234",sensitive,financial
-"Here is my UPI PIN: 4521, please don't share it",sensitive,credentials
+The new dashboard makes it easier to track project milestones,non-sensitive,none
+Our team completed the sprint with all tasks closed,non-sensitive,none
+The workshop covers best practices for writing secure code,non-sensitive,none
+"For technical support, dial extension 204 from any office phone",non-sensitive,none
+"Emergency contact: Priya Nair, phone 91-9876543210, relation sister",sensitive,PII
+Reach out to info@company.com for general inquiries,non-sensitive,none
+General inquiries can be directed to the main reception desk,non-sensitive,none
+The store's return policy allows exchanges within 30 days,non-sensitive,none
+The recipe calls for two cups of flour and one egg,non-sensitive,none
+"Insurance policy number LIC-88213456, sum assured 5 lakhs",sensitive,financial
+Please reset my password to Winter#2025 for the VPN access,sensitive,credentials
+This changelog documents the latest bug fixes and improvements,non-sensitive,none
