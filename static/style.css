@@ -38,11 +38,22 @@ button {
   padding: 10px;
 }
 
-.email { background: #ffcccc; color: black; }
-.phone { background: #cce5ff; color: black; }
-.name { background: #d4edda; color: black; }
-.org { background: #fff3cd; color: black; }
-.location { background: #e2d6f3; color: black; }
+/* ---------- Highlight classes ---------- */
+/* Lower-sensitivity / structural PII */
+.email        { background: #ffcccc; color: black; }
+.phone        { background: #cce5ff; color: black; }
+.name         { background: #d4edda; color: black; }
+.org          { background: #fff3cd; color: black; }
+.location     { background: #e2d6f3; color: black; }
+.ip-address   { background: #d1ecf1; color: black; }
+.address      { background: #e2d6f3; color: black; }
+
+/* Higher-sensitivity / financial & credential data — stronger colors */
+.credit-card  { background: #f8d7da; color: black; font-weight: bold; }
+.ssn          { background: #f5c2c7; color: black; font-weight: bold; }
+.aadhaar      { background: #f5c2c7; color: black; font-weight: bold; }
+.password     { background: #f8d7da; color: black; font-weight: bold; }
+.api-key      { background: #f8d7da; color: black; font-weight: bold; }
 
 .hidden {
   display: none;

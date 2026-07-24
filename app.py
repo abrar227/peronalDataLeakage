@@ -1,28 +1,15 @@
 from flask import Flask, render_template, request, jsonify
-import re
-import spacy
 import html
 from PyPDF2 import PdfReader
 
-# Load spaCy model safely
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    import os
-    os.system("python -m spacy download en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+from detectors import rule_based, nlp_contextual, deep_learning, anomaly
+from detectors.risk_scoring import calculate_risk
 
 app = Flask(__name__)
-
-# Limit upload size (10MB)
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
 
 
-# ---------- UTIL FUNCTIONS ----------
-
-def unique(items):
-    return list(dict.fromkeys(items))
-
+# ---------- UTIL ----------
 
 def extract_text_from_pdf(file):
     reader = PdfReader(file)
@@ -32,75 +19,85 @@ def extract_text_from_pdf(file):
     return text
 
 
-def calculate_risk(data):
-    score = 0
+def run_all_detectors(text: str) -> dict:
+    """
+    Runs rule-based + NLP detectors, combines findings, and computes
+    a risk score. Deep learning + anomaly are called but currently
+    return "unavailable" placeholders (see detectors/deep_learning.py
+    and detectors/anomaly.py).
+    """
+    pattern_findings = rule_based.detect_patterns(text)
+    entity_findings = nlp_contextual.extract_entities(text)
 
-    score += len(data["email"]) * 25
-    score += len(data["phone"]) * 30
-    score += len(data["names"]) * 10
-    score += len(data["organizations"]) * 5
-    score += len(data["locations"]) * 5
+    combined = {**pattern_findings, **entity_findings}
 
-    if score > 80:
-        return "HIGH"
-    elif score > 40:
-        return "MEDIUM"
-    else:
-        return "LOW"
+    dl_result = deep_learning.predict(text)
+    risk = calculate_risk(combined)
 
-
-# ---------- CORE DETECTION ----------
-
-def detect_data(text):
-    doc = nlp(text)
-
-    # Improved regex
-    emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}', text)
-    phones = re.findall(r'\b\+?\d{1,3}?[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b', text)
-
-    names, orgs, locations = [], [], []
-
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            names.append(ent.text)
-        elif ent.label_ == "ORG":
-            orgs.append(ent.text)
-        elif ent.label_ == "GPE":
-            locations.append(ent.text)
-
-    result = {
-        "email": unique(emails),
-        "phone": unique(phones),
-        "names": unique(names),
-        "organizations": unique(orgs),
-        "locations": unique(locations)
+    return {
+        "email": combined.get("email", []),
+        "phone": combined.get("phone", []),
+        "credit_card": combined.get("credit_card", []),
+        "ssn": combined.get("ssn", []),
+        "aadhaar": combined.get("aadhaar", []),
+        "ip_address": combined.get("ip_address", []),
+        "password": combined.get("password", []),
+        "api_key": combined.get("api_key", []),
+        "address": combined.get("address", []),
+        "names": combined.get("names", []),
+        "organizations": combined.get("organizations", []),
+        "locations": combined.get("locations", []),
+        "deep_learning": dl_result,
+        "risk_score": risk["score"],
+        "risk_level": risk["risk_level"],
+        "risk_breakdown": risk["breakdown"],
     }
 
-    result["risk_level"] = calculate_risk(result)
-    return result
+
+CATEGORY_CSS = {
+    "email": "email",
+    "phone": "phone",
+    "credit_card": "credit-card",
+    "ssn": "ssn",
+    "aadhaar": "aadhaar",
+    "ip_address": "ip-address",
+    "password": "password",
+    "api_key": "api-key",
+    "address": "address",
+    "names": "name",
+    "organizations": "org",
+    "locations": "location",
+}
 
 
-# ---------- HIGHLIGHT ----------
-
-def highlight_text(text, data):
+def highlight_text(text: str, findings: dict) -> str:
+    """
+    Wraps every detected match (from any category) in a <span> with a
+    category-specific CSS class, driven directly by the already-computed
+    findings dict (not by re-running regex), so what gets highlighted is
+    guaranteed to match what was actually detected/reported.
+    """
     text = html.escape(text)
 
-    # Email & phone
-    text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}',
-                  r'<span class="email">\g<0></span>', text)
+    # Collect (match_string, css_class) pairs, longest match first, so a
+    # longer match (e.g. a full address) gets wrapped before a shorter
+    # one nested inside it (e.g. a house number) can interfere.
+    all_matches = []
+    for category, css_class in CATEGORY_CSS.items():
+        for match in findings.get(category, []):
+            escaped = html.escape(match)
+            if escaped:
+                all_matches.append((escaped, css_class))
 
-    text = re.sub(r'\b\+?\d{1,3}?[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',
-                  r'<span class="phone">\g<0></span>', text)
+    all_matches.sort(key=lambda pair: len(pair[0]), reverse=True)
 
-    # Entities
-    for name in data["names"]:
-        text = text.replace(name, f'<span class="name">{name}</span>')
-
-    for org in data["organizations"]:
-        text = text.replace(org, f'<span class="org">{org}</span>')
-
-    for loc in data["locations"]:
-        text = text.replace(loc, f'<span class="location">{loc}</span>')
+    for escaped_match, css_class in all_matches:
+        if escaped_match in text:
+            text = text.replace(
+                escaped_match,
+                f'<span class="{css_class}">{escaped_match}</span>',
+                1,
+            )
 
     return text
 
@@ -120,9 +117,8 @@ def scan():
     if not text:
         return jsonify({"error": "No text provided"}), 400
 
-    result = detect_data(text)
+    result = run_all_detectors(text)
     result["highlighted_text"] = highlight_text(text, result)
-
     return jsonify(result)
 
 
@@ -141,9 +137,8 @@ def upload():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-    result = detect_data(text)
+    result = run_all_detectors(text)
     result["highlighted_text"] = highlight_text(text, result)
-
     return jsonify(result)
 
 

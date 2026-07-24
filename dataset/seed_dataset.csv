@@ -11,7 +11,7 @@ text,label,category
 "The server root password is stored in config.env as DB_PASS",sensitive,credentials
 "My home address is 42 Lakeview Street, Springfield",sensitive,PII
 "Patient John Smith was diagnosed with hypertension on 12/03/2023",sensitive,health
-"Salary details: Rahul earns ₹85,000 per month at TechCorp",sensitive,financial
+"Salary details: Rahul earns eighty five thousand rupees per month at TechCorp",sensitive,financial
 "Please find attached my passport number N1234567",sensitive,PII
 "Employee ID 4521, DOB 14-02-1990, reporting to HR",sensitive,PII
 "The Wi-Fi password for the office is Guest@2024",sensitive,credentials
@@ -19,6 +19,36 @@ text,label,category
 "My driver's license number is D1234567 issued in California",sensitive,PII
 "Login: admin@corp.com Password: Passw0rd123",sensitive,credentials
 "Medical record: patient has type 2 diabetes, insulin dependent",sensitive,health
+"My date of birth is 14th February 1995 and I live at 12 Rose Avenue",sensitive,PII
+"Please transfer the funds to IBAN GB29NWBK60161331926819",sensitive,financial
+"His PAN number is ABCDE1234F for the tax filing",sensitive,PII
+"Root credentials: user=admin pass=Toor@123 for the production server",sensitive,credentials
+"The patient's blood test shows elevated cholesterol, prescribed statins",sensitive,health
+"Emergency contact: Priya Nair, phone 91-9876543210, relation sister",sensitive,PII
+"Card expiring soon: 5500 0000 0000 0004, CVV 123",sensitive,financial
+"Please reset my password to Winter#2025 for the VPN access",sensitive,credentials
+"My mother's maiden name for the security question is Fernandes",sensitive,PII
+"Insurance policy number LIC-88213456, sum assured 5 lakhs",sensitive,financial
+"His voter ID is ABC1234567 registered at the Kochi constituency",sensitive,PII
+"AWS access key AKIAIOSFODNN7EXAMPLE was found committed to the repo",sensitive,credentials
+"Therapy session notes: patient reports anxiety related to work stress",sensitive,health
+"My new PIN for the debit card is 7749",sensitive,credentials
+"Passport expiring: P1234567IND, please renew before travel",sensitive,PII
+"The employee's performance review mentions his ongoing medical leave for surgery",sensitive,health
+"Server login token: ghp_16C7e42F292c6912E7710c838347Ae178B4a",sensitive,credentials
+"Please courier the documents to my residence at 15 Palm Grove Layout",sensitive,PII
+"Customer complained: card 4012888888881881 was charged twice",sensitive,financial
+"His health insurance claim references a recent cardiac procedure",sensitive,health
+"Confidential: merger discussions include CFO's home number 9847123456",sensitive,PII
+"The internal memo lists all employees' salaries in a shared spreadsheet",sensitive,financial
+"Verification code sent to your phone: 483920, valid for 5 minutes",sensitive,credentials
+"Please update the shipping address to Flat 4B, Green Residency, Chennai",sensitive,PII
+"The lab report confirms a positive result requiring immediate treatment",sensitive,health
+"Database connection string: postgres://admin:P@ssw0rd@db.internal:5432",sensitive,credentials
+"His annual bonus of 2.5 lakhs was credited to account ending 4532",sensitive,financial
+"Please note the client's SSN 987-65-4321 for the background check",sensitive,PII
+"The onboarding form requires your Aadhaar 5678 1234 9087 and PAN",sensitive,PII
+"Temporary password issued: Xk9#mPq2, must be changed on first login",sensitive,credentials
 "The quarterly sales report shows a 12% increase in revenue",non-sensitive,none
 "Let's meet at the coffee shop near the office at 10am",non-sensitive,none
 "The new product launch is scheduled for next Tuesday",non-sensitive,none
@@ -39,3 +69,48 @@ text,label,category
 "Our stock of office supplies needs to be restocked soon",non-sensitive,none
 "The keynote speaker was well received by the audience",non-sensitive,none
 "Remember to submit your timesheet by end of day Friday",non-sensitive,none
+"For support, call our toll-free number 1-800-555-0199",non-sensitive,none
+"Reach out to info@company.com for general inquiries",non-sensitive,none
+"Our headquarters is located at 500 Market Street, San Francisco",non-sensitive,none
+"The customer service hotline is open 24/7 for assistance",non-sensitive,none
+"You can email press@company.com for media inquiries",non-sensitive,none
+"The building's main entrance is on 5th Avenue near the plaza",non-sensitive,none
+"Follow our official page for updates on new releases",non-sensitive,none
+"The store's return policy allows exchanges within 30 days",non-sensitive,none
+"Contact billing@company.com if you have questions about your invoice",non-sensitive,none
+"The warehouse address for returns is 100 Industrial Road, Unit 3",non-sensitive,none
+"The company's stock price closed higher today after strong earnings",non-sensitive,none
+"Please note our office will be closed on public holidays",non-sensitive,none
+"The annual report highlights growth across all business units",non-sensitive,none
+"For technical support, dial extension 204 from any office phone",non-sensitive,none
+"The new intern starts on Monday and will join the design team",non-sensitive,none
+"Our support email support@company.com typically replies within a day",non-sensitive,none
+"The demo account uses dummy data and is not linked to real users",non-sensitive,none
+"This is a test transaction of $0.00 used only for sandbox testing",non-sensitive,none
+"The placeholder password field just shows dots, no real password is stored here",non-sensitive,none
+"Example API usage: api_key=YOUR_KEY_HERE in the documentation",non-sensitive,none
+"The tutorial uses a sample email like user@example.com for illustration",non-sensitive,none
+"Sample SSN format for the form is XXX-XX-XXXX, not an actual number",non-sensitive,none
+"The office directory lists department extensions, not personal numbers",non-sensitive,none
+"Our press kit includes generic company contact details for journalists",non-sensitive,none
+"The training manual uses a fictional employee named Jane Sample",non-sensitive,none
+"IP addresses like 127.0.0.1 are used for local testing only",non-sensitive,none
+"The invoice template shows a placeholder amount of $100.00",non-sensitive,none
+"General inquiries can be directed to the main reception desk",non-sensitive,none
+"The FAQ page explains how to reset your password using the app",non-sensitive,none
+"Our new office is located near the Landmark on Park Avenue",non-sensitive,none
+"The onboarding guide explains how employee IDs are generated",non-sensitive,none
+"This changelog documents the latest bug fixes and improvements",non-sensitive,none
+"The workshop covers best practices for writing secure code",non-sensitive,none
+"Quarterly all-hands meeting is scheduled for next Thursday",non-sensitive,none
+"The cafeteria menu has been updated with new vegetarian options",non-sensitive,none
+"Please find the meeting minutes attached for your reference",non-sensitive,none
+"The security awareness training is mandatory for all staff",non-sensitive,none
+"Our data retention policy is outlined in the employee handbook",non-sensitive,none
+"The new dashboard makes it easier to track project milestones",non-sensitive,none
+"We are proud to announce record customer satisfaction scores",non-sensitive,none
+"The IT team will perform scheduled maintenance this weekend",non-sensitive,none
+"Parking is available in the garage adjacent to the main building",non-sensitive,none
+"The product roadmap for next quarter focuses on performance",non-sensitive,none
+"Employees can access the gym facility on the second floor",non-sensitive,none
+"The company blog published a new article on industry trends",non-sensitive,none

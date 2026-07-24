@@ -1,7 +1,19 @@
 text,label,category
-API key: sk_live_51Hn8x7ZQm29fkLp0wQe,sensitive,credentials
-"Employee ID 4521, DOB 14-02-1990, reporting to HR",sensitive,PII
-The Wi-Fi password for the office is Guest@2024,sensitive,credentials
+The product roadmap for next quarter focuses on performance,non-sensitive,none
+My credit card number is 4111 1111 1111 1111 exp 12/26,sensitive,financial
+The weather today is sunny with a high of 28 degrees,non-sensitive,none
+The building's main entrance is on 5th Avenue near the plaza,non-sensitive,none
+Patient John Smith was diagnosed with hypertension on 12/03/2023,sensitive,health
+Remember to submit your timesheet by end of day Friday,non-sensitive,none
+The security awareness training is mandatory for all staff,non-sensitive,none
+The demo account uses dummy data and is not linked to real users,non-sensitive,none
+Please find attached my passport number N1234567,sensitive,PII
+Parking is available in the garage adjacent to the main building,non-sensitive,none
 My driver's license number is D1234567 issued in California,sensitive,PII
-Please send the invoice to accounts@company.com by Friday,sensitive,PII
-My password for the admin panel is Summer2024!,sensitive,credentials
+My mother's maiden name for the security question is Fernandes,sensitive,PII
+AWS access key AKIAIOSFODNN7EXAMPLE was found committed to the repo,sensitive,credentials
+The employee's performance review mentions his ongoing medical leave for surgery,sensitive,health
+The training manual uses a fictional employee named Jane Sample,non-sensitive,none
+His Aadhaar number is 1234 5678 9012,sensitive,PII
+"Employee ID 4521, DOB 14-02-1990, reporting to HR",sensitive,PII
+Please note our office will be closed on public holidays,non-sensitive,none
