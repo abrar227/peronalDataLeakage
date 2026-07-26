@@ -4,10 +4,26 @@ const textInput = document.getElementById("text-input");
 const resultBox = document.getElementById("resultBox");
 const loading = document.getElementById("loading");
 const riskEl = document.getElementById("risk");
+const riskScoreEl = document.getElementById("risk-score");
 const entitiesEl = document.getElementById("entities");
+const riskBreakdownEl = document.getElementById("riskBreakdown");
 const highlightedTextEl = document.getElementById("highlightedText");
-const emailCountEl = document.getElementById("email-count");
-const phoneCountEl = document.getElementById("phone-count");
+
+// Maps each JSON key from /scan and /upload to its stat-box element id
+const COUNT_ELEMENT_IDS = {
+    email: "email-count",
+    phone: "phone-count",
+    credit_card: "credit-card-count",
+    ssn: "ssn-count",
+    aadhaar: "aadhaar-count",
+    ip_address: "ip-address-count",
+    password: "password-count",
+    api_key: "api-key-count",
+    address: "address-count",
+    names: "name-count",
+    organizations: "org-count",
+    locations: "location-count",
+};
 
 dropZone.onclick = () => fileInput.click();
 
@@ -53,25 +69,56 @@ function showLoading() {
 
 function displayResult(data) {
     loading.classList.add("hidden");
+
+    if (data.error) {
+        alert(data.error);
+        return;
+    }
+
     resultBox.classList.remove("hidden");
 
-    emailCountEl.innerText = data.email.length;
-    phoneCountEl.innerText = data.phone.length;
+    // Update every stat box count
+    for (const [key, elementId] of Object.entries(COUNT_ELEMENT_IDS)) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            const list = data[key] || [];
+            el.innerText = list.length;
+        }
+    }
 
-    riskEl.innerText = data.risk_level;
+    // Risk level + score
+    riskEl.innerText = data.risk_level || "UNKNOWN";
+    riskScoreEl.innerText = data.risk_score !== undefined ? data.risk_score : "-";
 
-    // Risk color
     if (data.risk_level === "HIGH") riskEl.style.color = "red";
     else if (data.risk_level === "MEDIUM") riskEl.style.color = "orange";
     else riskEl.style.color = "lightgreen";
 
+    // Detailed entity lists
     entitiesEl.innerHTML = `
-        <p><b>Emails:</b> ${data.email.join(", ") || "None"}</p>
-        <p><b>Phones:</b> ${data.phone.join(", ") || "None"}</p>
-        <p><b>Names:</b> ${data.names.join(", ") || "None"}</p>
-        <p><b>Organizations:</b> ${data.organizations.join(", ") || "None"}</p>
-        <p><b>Locations:</b> ${data.locations.join(", ") || "None"}</p>
+        <p><b>Emails:</b> ${(data.email || []).join(", ") || "None"}</p>
+        <p><b>Phones:</b> ${(data.phone || []).join(", ") || "None"}</p>
+        <p><b>Credit Cards:</b> ${(data.credit_card || []).join(", ") || "None"}</p>
+        <p><b>SSN:</b> ${(data.ssn || []).join(", ") || "None"}</p>
+        <p><b>Aadhaar:</b> ${(data.aadhaar || []).join(", ") || "None"}</p>
+        <p><b>IP Addresses:</b> ${(data.ip_address || []).join(", ") || "None"}</p>
+        <p><b>Passwords:</b> ${(data.password || []).join(", ") || "None"}</p>
+        <p><b>API Keys:</b> ${(data.api_key || []).join(", ") || "None"}</p>
+        <p><b>Addresses:</b> ${(data.address || []).join(", ") || "None"}</p>
+        <p><b>Names:</b> ${(data.names || []).join(", ") || "None"}</p>
+        <p><b>Organizations:</b> ${(data.organizations || []).join(", ") || "None"}</p>
+        <p><b>Locations:</b> ${(data.locations || []).join(", ") || "None"}</p>
     `;
 
-    highlightedTextEl.innerHTML = data.highlighted_text;
+    // Risk score breakdown (per-category contribution)
+    if (data.risk_breakdown && Object.keys(data.risk_breakdown).length > 0) {
+        const rows = Object.entries(data.risk_breakdown)
+            .map(([cat, val]) => `<li>${cat}: +${val}</li>`)
+            .join("");
+        riskBreakdownEl.innerHTML = `<p><b>Risk Breakdown:</b></p><ul>${rows}</ul>`;
+    } else {
+        riskBreakdownEl.innerHTML = "";
+    }
+
+    highlightedTextEl.innerHTML = data.highlighted_text || "";
 }

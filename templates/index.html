@@ -23,16 +23,32 @@ Location: New York</textarea>
 
   <button onclick="scanText()">Scan Data</button>
 
-  <div class="stats">
-    <div class="stat-box">📧 Emails: <span id="email-count">0</span></div>
-    <div class="stat-box">📱 Phones: <span id="phone-count">0</span></div>
-  </div>
-
   <div id="loading" class="hidden">⏳ Scanning...</div>
 
   <div id="resultBox" class="hidden">
-    <h3>⚠️ Risk Level: <span id="risk"></span></h3>
+
+    <div class="risk-panel">
+      <h3>⚠️ Risk Level: <span id="risk"></span></h3>
+      <p>Score: <span id="risk-score"></span></p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">📧 Emails: <span id="email-count">0</span></div>
+      <div class="stat-box">📱 Phones: <span id="phone-count">0</span></div>
+      <div class="stat-box">💳 Credit Cards: <span id="credit-card-count">0</span></div>
+      <div class="stat-box">🆔 SSN: <span id="ssn-count">0</span></div>
+      <div class="stat-box">🆔 Aadhaar: <span id="aadhaar-count">0</span></div>
+      <div class="stat-box">🌐 IP Addresses: <span id="ip-address-count">0</span></div>
+      <div class="stat-box">🔑 Passwords: <span id="password-count">0</span></div>
+      <div class="stat-box">🔑 API Keys: <span id="api-key-count">0</span></div>
+      <div class="stat-box">🏠 Addresses: <span id="address-count">0</span></div>
+      <div class="stat-box">🧑 Names: <span id="name-count">0</span></div>
+      <div class="stat-box">🏢 Organizations: <span id="org-count">0</span></div>
+      <div class="stat-box">📍 Locations: <span id="location-count">0</span></div>
+    </div>
+
     <div id="entities"></div>
+    <div id="riskBreakdown"></div>
     <div id="highlightedText"></div>
   </div>
 </div>
