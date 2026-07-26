@@ -58,3 +58,48 @@ button {
 .hidden {
   display: none;
 }
+
+/* ---------- New layout: stats grid + risk panel ---------- */
+.container {
+  width: 600px;
+}
+
+.risk-panel {
+  margin-top: 15px;
+  padding: 10px;
+  background: #16213a;
+  border-radius: 8px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.stats-grid .stat-box {
+  background: #16213a;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+#entities p, #riskBreakdown p {
+  margin: 6px 0;
+  font-size: 0.9em;
+}
+
+#riskBreakdown ul {
+  margin: 4px 0;
+  padding-left: 20px;
+  font-size: 0.85em;
+}
+
+#highlightedText {
+  margin-top: 15px;
+  padding: 10px;
+  background: #0f1a2e;
+  border-radius: 8px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
