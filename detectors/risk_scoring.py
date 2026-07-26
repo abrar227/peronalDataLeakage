@@ -30,14 +30,24 @@ CATEGORY_WEIGHTS = {
 LINKING_CATEGORIES = {"names", "email", "phone", "address", "ssn", "aadhaar"}
 COMBO_BONUS = 20
 
+# If the BERT contextual classifier (detectors/deep_learning.py) flags
+# text as "sensitive", add up to this many points, scaled by its
+# confidence. This matters most for catching leaks that rule-based
+# regex and spaCy NER miss entirely (e.g. spelled-out numbers,
+# lowercase casual names) - exactly the gap the SRS's NLP layer is
+# meant to close.
+BERT_MAX_BONUS = 30
+
 HIGH_THRESHOLD = 80
 MEDIUM_THRESHOLD = 40
 
 
-def calculate_risk(findings: dict) -> dict:
+def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     """
     findings: dict mapping category name -> list of matches
               (combined output from rule_based + nlp_contextual detectors)
+    dl_result: optional {"label": str, "confidence": float} from
+               detectors/deep_learning.py (BERT classifier)
 
     Returns: {"score": int, "risk_level": str, "breakdown": dict}
     """
@@ -60,6 +70,12 @@ def calculate_risk(findings: dict) -> dict:
     if len(linking_hits) >= 2:
         score += COMBO_BONUS
         breakdown["combo_bonus"] = COMBO_BONUS
+
+    if dl_result and dl_result.get("label") == "sensitive":
+        bert_contribution = round(BERT_MAX_BONUS * dl_result.get("confidence", 0))
+        if bert_contribution > 0:
+            score += bert_contribution
+            breakdown["bert_contextual"] = bert_contribution
 
     if score > HIGH_THRESHOLD:
         level = "HIGH"
