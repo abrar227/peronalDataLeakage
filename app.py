@@ -21,10 +21,10 @@ def extract_text_from_pdf(file):
 
 def run_all_detectors(text: str) -> dict:
     """
-    Runs rule-based + NLP detectors, combines findings, and computes
-    a risk score. Deep learning + anomaly are called but currently
-    return "unavailable" placeholders (see detectors/deep_learning.py
-    and detectors/anomaly.py).
+    Runs rule-based + NLP detectors, combines findings, calls the BERT
+    contextual classifier, and computes a risk score that factors in
+    all three signals. Anomaly detection is called but currently
+    returns an "unavailable" placeholder (see detectors/anomaly.py).
     """
     pattern_findings = rule_based.detect_patterns(text)
     entity_findings = nlp_contextual.extract_entities(text)
@@ -32,7 +32,7 @@ def run_all_detectors(text: str) -> dict:
     combined = {**pattern_findings, **entity_findings}
 
     dl_result = deep_learning.predict(text)
-    risk = calculate_risk(combined)
+    risk = calculate_risk(combined, dl_result)
 
     return {
         "email": combined.get("email", []),
