@@ -16,7 +16,8 @@ PATTERNS = {
         r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}'
     ),
     "phone": re.compile(
-        r'\b\+?\d{1,3}?[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b'
+        r'\b\+?\d{1,4}(?:[-.\s]\d{2,4}){1,3}\b'   # separated: covers US, Australian, etc.
+        r'|\b\d{7,13}\b'                            # plain contiguous digit run, no separators
     ),
     "credit_card": re.compile(
         r'\b(?:\d[ -]*?){13,16}\b'
@@ -90,6 +91,23 @@ def detect_patterns(text: str) -> dict:
         results["aadhaar"] = [
             a for a in results["aadhaar"]
             if not any(a in cc for cc in results["credit_card"])
+        ]
+
+    # The broadened phone pattern (needed for international formats like
+    # Australian "0412 345 678") also catches digit-separated matches
+    # that are really a credit card, SSN, Aadhaar number, or IP address.
+    # Drop any phone match that is fully contained in (or equal to) a
+    # match from one of those more specific categories.
+    more_specific = (
+        results.get("credit_card", [])
+        + results.get("ssn", [])
+        + results.get("aadhaar", [])
+        + results.get("ip_address", [])
+    )
+    if more_specific:
+        results["phone"] = [
+            p for p in results["phone"]
+            if not any(p in specific or specific in p for specific in more_specific)
         ]
 
     return results
