@@ -7,6 +7,7 @@ const riskEl = document.getElementById("risk");
 const riskScoreEl = document.getElementById("risk-score");
 const entitiesEl = document.getElementById("entities");
 const riskBreakdownEl = document.getElementById("riskBreakdown");
+const anomalyPanelEl = document.getElementById("anomalyPanel");
 const highlightedTextEl = document.getElementById("highlightedText");
 
 // Maps each JSON key from /scan and /upload to its stat-box element id
@@ -118,6 +119,18 @@ function displayResult(data) {
         riskBreakdownEl.innerHTML = `<p><b>Risk Breakdown:</b></p><ul>${rows}</ul>`;
     } else {
         riskBreakdownEl.innerHTML = "";
+    }
+
+    // Anomaly / insider-threat behavioral check
+    if (data.anomaly) {
+        const flagged = data.anomaly.is_anomaly;
+        anomalyPanelEl.innerHTML = `
+            <p><b>${flagged ? "🚨 Anomaly Detected" : "✅ Normal Behavior"}:</b>
+            ${data.anomaly.reason}</p>
+        `;
+        anomalyPanelEl.style.borderLeft = flagged ? "4px solid #ff4d4d" : "4px solid #4caf50";
+    } else {
+        anomalyPanelEl.innerHTML = "";
     }
 
     highlightedTextEl.innerHTML = data.highlighted_text || "";
