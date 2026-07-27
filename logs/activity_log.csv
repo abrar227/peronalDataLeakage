@@ -1,0 +1,5 @@
+timestamp,user_id,hour_of_day,text_length,risk_score,is_anomaly
+2026-07-27T07:23:22.817374,demo_user,7,2150,2038,True
+2026-07-27T07:30:59.703087,demo_user,7,89,101,True
+2026-07-27T07:31:35.710192,demo_user,7,2147,2033,True
+2026-07-27T07:36:39.812679,demo_user,7,2147,2033,True
