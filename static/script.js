@@ -8,6 +8,7 @@ const riskScoreEl = document.getElementById("risk-score");
 const entitiesEl = document.getElementById("entities");
 const riskBreakdownEl = document.getElementById("riskBreakdown");
 const anomalyPanelEl = document.getElementById("anomalyPanel");
+const explanationPanelEl = document.getElementById("explanationPanel");
 const highlightedTextEl = document.getElementById("highlightedText");
 
 // Maps each JSON key from /scan and /upload to its stat-box element id
@@ -131,6 +132,27 @@ function displayResult(data) {
         anomalyPanelEl.style.borderLeft = flagged ? "4px solid #ff4d4d" : "4px solid #4caf50";
     } else {
         anomalyPanelEl.innerHTML = "";
+    }
+
+    // Explainable AI - why BERT flagged this as sensitive
+    if (data.explanation && data.explanation.available) {
+        const wordRows = data.explanation.top_words
+            .map(tw => {
+                const color = tw.weight > 0 ? "#ff8a80" : "#80cbc4";
+                const sign = tw.weight > 0 ? "+" : "";
+                return `<li><b>${tw.word}</b>: <span style="color:${color}">${sign}${tw.weight}</span></li>`;
+            })
+            .join("");
+        explanationPanelEl.innerHTML = `
+            <p><b>🧠 Why BERT flagged this:</b></p>
+            <p>${data.explanation.summary}</p>
+            <ul>${wordRows}</ul>
+            <p style="font-size:0.8em; opacity:0.7;">Red = pushed toward "sensitive", Teal = pushed away from it</p>
+        `;
+    } else if (data.explanation) {
+        explanationPanelEl.innerHTML = `<p style="opacity:0.6;">${data.explanation.summary}</p>`;
+    } else {
+        explanationPanelEl.innerHTML = "";
     }
 
     highlightedTextEl.innerHTML = data.highlighted_text || "";
