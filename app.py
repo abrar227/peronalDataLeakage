@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import html
 from PyPDF2 import PdfReader
 
-from detectors import rule_based, nlp_contextual, deep_learning, anomaly
+from detectors import rule_based, nlp_contextual, deep_learning, anomaly, explainability
 from detectors.risk_scoring import calculate_risk
 
 app = Flask(__name__)
@@ -34,6 +34,15 @@ def run_all_detectors(text: str, user_id: str = "demo_user") -> dict:
     dl_result = deep_learning.predict(text)
     risk = calculate_risk(combined, dl_result)
 
+    # Only run LIME explanation when it's actually useful - i.e. when
+    # BERT flagged this as sensitive. LIME needs many forward passes
+    # through BERT, so skip it entirely for non-sensitive verdicts to
+    # keep the app responsive.
+    if dl_result.get("label") == "sensitive":
+        explanation = explainability.explain_prediction(text)
+    else:
+        explanation = {"available": False, "top_words": [], "summary": "Not applicable — text not flagged as sensitive."}
+
     anomaly_result = anomaly.check_anomaly(
         user_id,
         {"risk_score": risk["score"], "text_length": len(text)},
@@ -53,6 +62,7 @@ def run_all_detectors(text: str, user_id: str = "demo_user") -> dict:
         "organizations": combined.get("organizations", []),
         "locations": combined.get("locations", []),
         "deep_learning": dl_result,
+        "explanation": explanation,
         "anomaly": anomaly_result,
         "risk_score": risk["score"],
         "risk_level": risk["risk_level"],
