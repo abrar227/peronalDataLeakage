@@ -38,9 +38,8 @@ COMBO_BONUS = 20
 # meant to close.
 BERT_MAX_BONUS = 30
 
-HIGH_THRESHOLD = 80
-MEDIUM_THRESHOLD = 40
-
+HIGH_THRESHOLD = 70
+MEDIUM_THRESHOLD = 25
 
 def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     """
