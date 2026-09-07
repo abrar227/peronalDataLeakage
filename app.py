@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, jsonify
+import uuid
 import html
+
+from flask import Flask, render_template, request, jsonify, session
 from PyPDF2 import PdfReader
 
 from detectors import rule_based, nlp_contextual, deep_learning, anomaly, explainability
@@ -8,8 +10,24 @@ from detectors.risk_scoring import calculate_risk
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
 
+# Needed for Flask sessions to work (keeps each browser's user_id stable).
+# For a real deployment, load this from an environment variable instead
+# of hardcoding it.
+app.secret_key = "replace-this-with-any-random-secret-string"
+
 
 # ---------- UTIL ----------
+
+def get_user_id():
+    """
+    Gives each browser a unique, stable ID stored in a session cookie,
+    so repeated scans from the same browser are tracked as the same
+    user (needed for anomaly.py's per-user baseline to work correctly).
+    """
+    if "user_id" not in session:
+        session["user_id"] = str(uuid.uuid4())
+    return session["user_id"]
+
 
 def extract_text_from_pdf(file):
     reader = PdfReader(file)
@@ -19,7 +37,7 @@ def extract_text_from_pdf(file):
     return text
 
 
-def run_all_detectors(text: str, user_id: str = "demo_user") -> dict:
+def run_all_detectors(text: str, user_id: str) -> dict:
     """
     Runs rule-based + NLP detectors, combines findings, calls the BERT
     contextual classifier, computes a risk score, and checks whether
@@ -133,7 +151,7 @@ def scan():
     if not text:
         return jsonify({"error": "No text provided"}), 400
 
-    result = run_all_detectors(text)
+    result = run_all_detectors(text, get_user_id())
     result["highlighted_text"] = highlight_text(text, result)
     return jsonify(result)
 
@@ -153,7 +171,7 @@ def upload():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-    result = run_all_detectors(text)
+    result = run_all_detectors(text, get_user_id())
     result["highlighted_text"] = highlight_text(text, result)
     return jsonify(result)
 

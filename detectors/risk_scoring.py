@@ -5,6 +5,22 @@ Computes a risk score from combined detector output.
 Weighted by category severity, plus a bonus when multiple
 categories co-occur (e.g. a name + phone together is riskier
 than either alone, since it's more easily linked to a person).
+
+UPDATE (proportional percentage scoring):
+  Earlier version added each category's weight once, then flat-capped
+  the total at 100. The problem: flat capping loses resolution - a
+  text with 3 sensitive categories and a text with 8 sensitive
+  categories could both just show "100%", even though the second is
+  clearly worse.
+
+  Fixed by computing the maximum score the system could EVER produce
+  (every category present + combo bonus + full BERT bonus), then
+  expressing the actual score as a percentage OF that theoretical
+  maximum. This means:
+    - The percentage is always naturally between 0-100 (raw score can
+      never exceed the max, since each category only contributes once).
+    - Two different "very bad" texts are still distinguished from each
+      other, instead of both collapsing to the same capped number.
 """
 
 # Base severity weight per category (tune these as you calibrate
@@ -41,6 +57,12 @@ BERT_MAX_BONUS = 30
 HIGH_THRESHOLD = 70
 MEDIUM_THRESHOLD = 25
 
+# The theoretical maximum raw score: every category weight, once each,
+# plus the combo bonus, plus the full BERT bonus. Used to normalize
+# the raw score into a true 0-100 percentage.
+MAX_POSSIBLE_SCORE = sum(CATEGORY_WEIGHTS.values()) + COMBO_BONUS + BERT_MAX_BONUS
+
+
 def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     """
     findings: dict mapping category name -> list of matches
@@ -48,33 +70,40 @@ def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     dl_result: optional {"label": str, "confidence": float} from
                detectors/deep_learning.py (BERT classifier)
 
-    Returns: {"score": int, "risk_level": str, "breakdown": dict}
+    Returns: {"score": int (0-100, a risk percentage), "risk_level": str, "breakdown": dict}
     """
     breakdown = {}
-    score = 0
+    raw_score = 0
 
     for category, matches in findings.items():
         count = len(matches) if matches else 0
         if count == 0:
             continue
         weight = CATEGORY_WEIGHTS.get(category, 5)
-        contribution = count * weight
-        breakdown[category] = contribution
-        score += contribution
+        # Weight counts once per category present - a long paragraph
+        # repeating the same sensitive item many times should not
+        # inflate the score beyond what one instance already implies.
+        breakdown[category] = weight
+        raw_score += weight
 
     linking_hits = [
         cat for cat in LINKING_CATEGORIES
         if findings.get(cat)
     ]
     if len(linking_hits) >= 2:
-        score += COMBO_BONUS
+        raw_score += COMBO_BONUS
         breakdown["combo_bonus"] = COMBO_BONUS
 
     if dl_result and dl_result.get("label") == "sensitive":
         bert_contribution = round(BERT_MAX_BONUS * dl_result.get("confidence", 0))
         if bert_contribution > 0:
-            score += bert_contribution
+            raw_score += bert_contribution
             breakdown["bert_contextual"] = bert_contribution
+
+    # Normalize against the theoretical maximum instead of flat-capping,
+    # so the percentage keeps distinguishing "bad" from "very bad".
+    score = round((raw_score / MAX_POSSIBLE_SCORE) * 100)
+    score = min(score, 100)  # safety net only - shouldn't normally trigger
 
     if score > HIGH_THRESHOLD:
         level = "HIGH"
@@ -87,12 +116,27 @@ def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
 
 
 if __name__ == "__main__":
-    sample_findings = {
+    from pprint import pprint
+
+    # A "moderately bad" example (3 categories)
+    moderate_findings = {
         "email": ["john.doe@gmail.com"],
         "phone": ["987-654-3210"],
         "names": ["John Doe"],
-        "credit_card": [],
-        "password": [],
     }
-    from pprint import pprint
-    pprint(calculate_risk(sample_findings))
+    print("Moderate case:")
+    pprint(calculate_risk(moderate_findings))
+
+    # A "very bad" example (many categories) - should score noticeably
+    # higher than the moderate case, not collapse to the same number.
+    severe_findings = {
+        "email": ["john.doe@gmail.com"],
+        "phone": ["987-654-3210"],
+        "ssn": ["123-45-6789"],
+        "credit_card": ["4111 1111 1111 1111"],
+        "password": ["Summer2024!"],
+        "address": ["42 Lakeview Street"],
+        "names": ["John Doe"],
+    }
+    print("\nSevere case:")
+    pprint(calculate_risk(severe_findings, {"label": "sensitive", "confidence": 0.95}))
