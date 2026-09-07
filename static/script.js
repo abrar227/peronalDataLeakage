@@ -90,8 +90,7 @@ function displayResult(data) {
 
     // Risk level + score
     riskEl.innerText = data.risk_level || "UNKNOWN";
-    riskScoreEl.innerText = data.risk_score !== undefined ? data.risk_score : "-";
-
+    riskScoreEl.innerText = data.risk_score !== undefined ? data.risk_score + "%" : "-";
     if (data.risk_level === "HIGH") riskEl.style.color = "red";
     else if (data.risk_level === "MEDIUM") riskEl.style.color = "orange";
     else riskEl.style.color = "lightgreen";
