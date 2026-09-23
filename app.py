@@ -85,6 +85,7 @@ def run_all_detectors(text: str, user_id: str) -> dict:
         "risk_score": risk["score"],
         "risk_level": risk["risk_level"],
         "risk_breakdown": risk["breakdown"],
+        "confidence_breakdown": risk["confidence_breakdown"],
     }
 
 
@@ -113,23 +114,31 @@ def highlight_text(text: str, findings: dict) -> str:
     """
     text = html.escape(text)
 
-    # Collect (match_string, css_class) pairs, longest match first, so a
-    # longer match (e.g. a full address) gets wrapped before a shorter
-    # one nested inside it (e.g. a house number) can interfere.
+    # Collect (match_string, css_class, confidence) triples, longest match
+    # first, so a longer match (e.g. a full address) gets wrapped before a
+    # shorter one nested inside it (e.g. a house number) can interfere.
     all_matches = []
     for category, css_class in CATEGORY_CSS.items():
         for match in findings.get(category, []):
-            escaped = html.escape(match)
+            value = match.get("value") if isinstance(match, dict) else match
+            confidence = match.get("confidence") if isinstance(match, dict) else None
+            escaped = html.escape(value)
             if escaped:
-                all_matches.append((escaped, css_class))
+                all_matches.append((escaped, css_class, confidence))
 
-    all_matches.sort(key=lambda pair: len(pair[0]), reverse=True)
+    all_matches.sort(key=lambda triple: len(triple[0]), reverse=True)
 
-    for escaped_match, css_class in all_matches:
+    for escaped_match, css_class, confidence in all_matches:
         if escaped_match in text:
+            # Confidence is shown as a hover tooltip so the highlighted
+            # text itself stays clean and readable.
+            title_attr = (
+                f' title="Confidence: {round(confidence * 100)}%"'
+                if confidence is not None else ""
+            )
             text = text.replace(
                 escaped_match,
-                f'<span class="{css_class}">{escaped_match}</span>',
+                f'<span class="{css_class}"{title_attr}>{escaped_match}</span>',
                 1,
             )
 

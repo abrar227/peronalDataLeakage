@@ -30,6 +30,10 @@ CATEGORY_WEIGHTS = {
     "phone": 20,
     "credit_card": 40,
     "ssn": 40,
+    "passport": 40,
+    "medical": 30,
+    "driver_license": 40,
+    "security_question": 20,
     "aadhaar": 40,
     "ip_address": 10,
     "password": 35,
@@ -70,9 +74,12 @@ def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     dl_result: optional {"label": str, "confidence": float} from
                detectors/deep_learning.py (BERT classifier)
 
-    Returns: {"score": int (0-100, a risk percentage), "risk_level": str, "breakdown": dict}
+    Returns: {"score": int (0-100, a risk percentage), "risk_level": str,
+              "breakdown": dict (category -> confidence-weighted points),
+              "confidence_breakdown": dict (category -> avg confidence 0-1)}
     """
     breakdown = {}
+    confidence_breakdown = {}
     raw_score = 0
 
     for category, matches in findings.items():
@@ -80,11 +87,26 @@ def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
         if count == 0:
             continue
         weight = CATEGORY_WEIGHTS.get(category, 5)
-        # Weight counts once per category present - a long paragraph
-        # repeating the same sensitive item many times should not
-        # inflate the score beyond what one instance already implies.
-        breakdown[category] = weight
-        raw_score += weight
+
+        # Each match may be {"value": str, "confidence": float} (rule_based /
+        # nlp_contextual output) or a plain string for backward compatibility.
+        confidences = [
+            m.get("confidence", 1.0) if isinstance(m, dict) else 1.0
+            for m in matches
+        ]
+        avg_confidence = sum(confidences) / len(confidences)
+
+        # A category's contribution is scaled by how confident the
+        # detectors were, on average, about matches in that category -
+        # a "maybe this is a phone number" match should move the risk
+        # score less than a near-certain one. Weight counts once per
+        # category present - a long paragraph repeating the same
+        # sensitive item many times should not inflate the score
+        # beyond what one instance already implies.
+        contribution = round(weight * avg_confidence)
+        breakdown[category] = contribution
+        confidence_breakdown[category] = round(avg_confidence, 2)
+        raw_score += contribution
 
     linking_hits = [
         cat for cat in LINKING_CATEGORIES
@@ -112,7 +134,12 @@ def calculate_risk(findings: dict, dl_result: dict = None) -> dict:
     else:
         level = "LOW"
 
-    return {"score": score, "risk_level": level, "breakdown": breakdown}
+    return {
+        "score": score,
+        "risk_level": level,
+        "breakdown": breakdown,
+        "confidence_breakdown": confidence_breakdown,
+    }
 
 
 if __name__ == "__main__":

@@ -29,9 +29,35 @@ const COUNT_ELEMENT_IDS = {
 
 dropZone.onclick = () => fileInput.click();
 
+dropZone.ondragover = (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-active");
+};
+dropZone.ondragleave = () => dropZone.classList.remove("drag-active");
+dropZone.ondrop = (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-active");
+    if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+};
+
 fileInput.onchange = () => {
     if (fileInput.files[0]) uploadFile(fileInput.files[0]);
 };
+
+// Renders a category's matches as "value (NN%)" chips, or "None".
+// Accepts either the new {value, confidence} objects or plain strings,
+// so this keeps working even against an older API response shape.
+function formatMatches(list) {
+    if (!list || list.length === 0) return "None";
+    return list
+        .map(m => {
+            if (typeof m === "string") return m;
+            const pct = Math.round((m.confidence ?? 1) * 100);
+            const level = pct >= 80 ? "conf-high" : pct >= 55 ? "conf-med" : "conf-low";
+            return `${m.value} <span class="confidence-badge ${level}">${pct}%</span>`;
+        })
+        .join(", ");
+}
 
 function scanText() {
     const text = textInput.value.trim();
@@ -95,26 +121,30 @@ function displayResult(data) {
     else if (data.risk_level === "MEDIUM") riskEl.style.color = "orange";
     else riskEl.style.color = "lightgreen";
 
-    // Detailed entity lists
+    // Detailed entity lists - each match shown with its confidence %
     entitiesEl.innerHTML = `
-        <p><b>Emails:</b> ${(data.email || []).join(", ") || "None"}</p>
-        <p><b>Phones:</b> ${(data.phone || []).join(", ") || "None"}</p>
-        <p><b>Credit Cards:</b> ${(data.credit_card || []).join(", ") || "None"}</p>
-        <p><b>SSN:</b> ${(data.ssn || []).join(", ") || "None"}</p>
-        <p><b>Aadhaar:</b> ${(data.aadhaar || []).join(", ") || "None"}</p>
-        <p><b>IP Addresses:</b> ${(data.ip_address || []).join(", ") || "None"}</p>
-        <p><b>Passwords:</b> ${(data.password || []).join(", ") || "None"}</p>
-        <p><b>API Keys:</b> ${(data.api_key || []).join(", ") || "None"}</p>
-        <p><b>Addresses:</b> ${(data.address || []).join(", ") || "None"}</p>
-        <p><b>Names:</b> ${(data.names || []).join(", ") || "None"}</p>
-        <p><b>Organizations:</b> ${(data.organizations || []).join(", ") || "None"}</p>
-        <p><b>Locations:</b> ${(data.locations || []).join(", ") || "None"}</p>
+        <p><b>Emails:</b> ${formatMatches(data.email)}</p>
+        <p><b>Phones:</b> ${formatMatches(data.phone)}</p>
+        <p><b>Credit Cards:</b> ${formatMatches(data.credit_card)}</p>
+        <p><b>SSN:</b> ${formatMatches(data.ssn)}</p>
+        <p><b>Aadhaar:</b> ${formatMatches(data.aadhaar)}</p>
+        <p><b>IP Addresses:</b> ${formatMatches(data.ip_address)}</p>
+        <p><b>Passwords:</b> ${formatMatches(data.password)}</p>
+        <p><b>API Keys:</b> ${formatMatches(data.api_key)}</p>
+        <p><b>Addresses:</b> ${formatMatches(data.address)}</p>
+        <p><b>Names:</b> ${formatMatches(data.names)}</p>
+        <p><b>Organizations:</b> ${formatMatches(data.organizations)}</p>
+        <p><b>Locations:</b> ${formatMatches(data.locations)}</p>
     `;
 
-    // Risk score breakdown (per-category contribution)
+    // Risk score breakdown (per-category contribution, now confidence-weighted)
     if (data.risk_breakdown && Object.keys(data.risk_breakdown).length > 0) {
         const rows = Object.entries(data.risk_breakdown)
-            .map(([cat, val]) => `<li>${cat}: +${val}</li>`)
+            .map(([cat, val]) => {
+                const conf = data.confidence_breakdown ? data.confidence_breakdown[cat] : undefined;
+                const confText = conf !== undefined ? ` <span style="opacity:0.7">(avg confidence: ${Math.round(conf * 100)}%)</span>` : "";
+                return `<li>${cat}: +${val}${confText}</li>`;
+            })
             .join("");
         riskBreakdownEl.innerHTML = `<p><b>Risk Breakdown:</b></p><ul>${rows}</ul>`;
     } else {

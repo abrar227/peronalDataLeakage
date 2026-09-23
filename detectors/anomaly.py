@@ -56,31 +56,52 @@ _model = None
 FEATURE_NAMES = ["hour_of_day", "text_length", "risk_score"]
 
 # --- Per-user baseline settings ---
-MIN_HISTORY_FOR_BASELINE = 10   # need at least this many past scans to trust a personal baseline
-ZSCORE_THRESHOLD = 3.0          # how many std-devs away counts as "way more than usual"
+MIN_HISTORY_FOR_BASELINE = 5    # need at least 5 past scans to trust a personal baseline
+ZSCORE_THRESHOLD = 2.0          # std-dev threshold for personal baseline anomaly
+HUGE_TEXT_THRESHOLD = 800       # submissions at or above this char length are flagged as volume anomalies
+HIGH_RISK_THRESHOLD = 70        # submissions at or above this risk score are flagged as high risk
 
 
-def _generate_synthetic_training_data(n_normal=300, n_anomalies=15, seed=42):
+def _generate_synthetic_training_data(n_normal=300, n_anomalies=30, seed=42):
     """
     Builds a synthetic behavioral dataset to train the GLOBAL fallback model on:
       - "Normal" activity: business hours (9am-7pm), short-to-medium
-        text length, low-to-moderate risk scores.
-      - Injected anomalies: odd hours (e.g. 2-4am), very large text
-        volume, or unusually high risk scores - simulating things
-        like bulk data exfiltration or off-hours access.
+        text length (10-500 chars), low-to-moderate risk scores (0-30).
+      - Injected anomalies across distinct behavioral dimensions:
+        1. Volume anomalies (huge text during business hours)
+        2. Risk anomalies (high risk score during business hours)
+        3. Off-hours anomalies (unusual hours 11pm-5am)
     """
     rng = np.random.default_rng(seed)
 
+    # 1. Normal usage
     normal_hours = rng.integers(9, 19, size=n_normal)          # 9am-6pm
     normal_length = rng.normal(150, 60, size=n_normal).clip(10, 500)
-    normal_risk = rng.normal(20, 12, size=n_normal).clip(0, 60)
+    normal_risk = rng.normal(10, 8, size=n_normal).clip(0, 30)
     normal = np.column_stack([normal_hours, normal_length, normal_risk])
 
-    anomaly_hours = rng.choice([1, 2, 3, 4, 23], size=n_anomalies)
-    anomaly_length = rng.normal(2500, 800, size=n_anomalies).clip(800, 6000)
-    anomaly_risk = rng.normal(140, 30, size=n_anomalies).clip(80, 220)
-    anomalies = np.column_stack([anomaly_hours, anomaly_length, anomaly_risk])
+    # 2. Volume anomalies: large text during business hours with normal risk
+    n_vol = n_anomalies // 3
+    vol_hours = rng.integers(9, 19, size=n_vol)
+    vol_length = rng.normal(2500, 800, size=n_vol).clip(800, 6000)
+    vol_risk = rng.normal(10, 8, size=n_vol).clip(0, 30)
+    vol_anomalies = np.column_stack([vol_hours, vol_length, vol_risk])
 
+    # 3. Risk anomalies: sensitive submissions during business hours with normal length
+    n_risk = n_anomalies // 3
+    risk_hours = rng.integers(9, 19, size=n_risk)
+    risk_length = rng.normal(150, 60, size=n_risk).clip(10, 500)
+    risk_score = rng.normal(85, 10, size=n_risk).clip(70, 100)
+    risk_anomalies = np.column_stack([risk_hours, risk_length, risk_score])
+
+    # 4. Off-hours anomalies: night submissions
+    n_off = n_anomalies - n_vol - n_risk
+    off_hours = rng.choice([0, 1, 2, 3, 4, 5, 22, 23], size=n_off)
+    off_length = rng.normal(1500, 600, size=n_off).clip(200, 5000)
+    off_risk = rng.normal(50, 25, size=n_off).clip(10, 100)
+    off_anomalies = np.column_stack([off_hours, off_length, off_risk])
+
+    anomalies = np.vstack([vol_anomalies, risk_anomalies, off_anomalies])
     data = np.vstack([normal, anomalies])
     return data
 
@@ -90,7 +111,7 @@ def _train_model():
     try:
         training_data = _generate_synthetic_training_data()
         # contamination = expected proportion of anomalies in training data
-        _model = IsolationForest(contamination=0.05, random_state=42)
+        _model = IsolationForest(contamination=0.08, random_state=42)
         _model.fit(training_data)
         MODEL_LOADED = True
         print("[anomaly] IsolationForest trained on synthetic behavioral baseline (fallback model).")
@@ -135,13 +156,22 @@ def _get_user_history(user_id):
     return history
 
 
+def get_user_scan_count(user_id: str) -> dict:
+    """Returns the number of scans logged for this user and whether their baseline is active."""
+    history = _get_user_history(user_id)
+    return {
+        "scan_count": len(history),
+        "baseline_required": MIN_HISTORY_FOR_BASELINE,
+        "has_baseline": len(history) >= MIN_HISTORY_FOR_BASELINE,
+    }
+
+
 def _check_against_user_baseline(history, text_length, risk_score):
     """
     Compares the new scan to this specific user's own past average,
-    using a z-score (how many standard deviations away from their
-    own normal this new value is).
+    using a z-score and domain sensitivity shift rules.
 
-    Returns: {"is_anomaly": bool, "reason": str} or None if not enough
+    Returns: {"is_anomaly": bool, "reason": str, ...} or None if not enough
     history to trust a personal baseline yet.
     """
     if len(history) < MIN_HISTORY_FOR_BASELINE:
@@ -153,27 +183,48 @@ def _check_against_user_baseline(history, text_length, risk_score):
     length_mean, length_std = lengths.mean(), lengths.std()
     risk_mean, risk_std = risks.mean(), risks.std()
 
-    # avoid divide-by-zero if a user's history has no variation at all
-    length_std = length_std if length_std > 0 else 1e-6
-    risk_std = risk_std if risk_std > 0 else 1e-6
+    # Prevent zero or near-zero variance from blowing up z-scores on minor differences
+    eff_length_std = max(float(length_std), 40.0)
+    eff_risk_std = max(float(risk_std), 5.0)
 
-    length_z = (text_length - length_mean) / length_std
-    risk_z = (risk_score - risk_mean) / risk_std
+    length_z = (text_length - length_mean) / eff_length_std
+    risk_z = (risk_score - risk_mean) / eff_risk_std
 
     reasons = []
-    if length_z > ZSCORE_THRESHOLD:
+
+    # 1. Text volume anomaly against user's history
+    # Requires statistical deviation with at least 200 chars increase, OR exceeding huge threshold and 1.5x average
+    is_length_anomaly = (
+        (length_z > ZSCORE_THRESHOLD and (text_length - length_mean) >= 200)
+        or (text_length >= HUGE_TEXT_THRESHOLD and text_length >= length_mean * 1.5)
+    )
+    if is_length_anomaly:
         reasons.append(
             f"text length ({text_length}) is far above this user's usual average ({length_mean:.0f})"
         )
-    if risk_z > ZSCORE_THRESHOLD:
+
+    # 2. Risk score anomaly against user's history
+    # Requires statistical deviation with at least 15 risk points increase, OR jump from insensitive baseline to sensitive data
+    is_risk_jump = (risk_mean < 20 and risk_score >= 20 and (risk_score - risk_mean) >= 15)
+    is_risk_anomaly = (
+        (risk_z > ZSCORE_THRESHOLD and (risk_score - risk_mean) >= 15)
+        or is_risk_jump
+    )
+    if is_risk_anomaly:
         reasons.append(
             f"risk score ({risk_score}) is far above this user's usual average ({risk_mean:.0f})"
         )
 
     is_anomaly = len(reasons) > 0
-    reason = "; ".join(reasons) if reasons else "within this user's normal pattern"
+    reason = "; ".join(reasons) if reasons else f"within this user's normal pattern (baseline: {len(history)} scans)"
 
-    return {"is_anomaly": is_anomaly, "reason": reason}
+    return {
+        "is_anomaly": is_anomaly,
+        "reason": reason,
+        "baseline_count": len(history),
+        "baseline_mean_risk": round(float(risk_mean), 1),
+        "baseline_mean_length": round(float(length_mean), 1),
+    }
 
 
 def check_anomaly(user_id: str, event_metadata: dict) -> dict:
@@ -183,10 +234,10 @@ def check_anomaly(user_id: str, event_metadata: dict) -> dict:
     Logic:
       1. If this user has enough history (MIN_HISTORY_FOR_BASELINE scans),
          compare the new scan to THEIR OWN average (per-user baseline).
-      2. Otherwise, fall back to the global IsolationForest model trained
-         on synthetic "typical" behavior.
+      2. Otherwise, fall back to the global IsolationForest model supported
+         by explicit domain guardrails for huge text and high risk submissions.
 
-    Returns: {"is_anomaly": bool, "reason": str}
+    Returns: {"is_anomaly": bool, "reason": str, ...}
     """
     now = datetime.now()
     hour = now.hour
@@ -202,33 +253,50 @@ def check_anomaly(user_id: str, event_metadata: dict) -> dict:
         _log_activity(user_id, features, result["is_anomaly"])
         return result
 
-    # Not enough history yet -> fall back to global model
-    if not MODEL_LOADED:
-        _log_activity(user_id, features, False)
-        return {"is_anomaly": False, "reason": "anomaly model not available, and not enough user history yet"}
+    # Not enough history yet -> cold start / global fallback
+    is_anomaly = False
+    reasons = []
 
-    try:
-        prediction = _model.predict([features])[0]  # -1 = anomaly, 1 = normal
-        is_anomaly = prediction == -1
+    # Guardrail 1: Huge text submission on cold start
+    if text_length >= HUGE_TEXT_THRESHOLD:
+        is_anomaly = True
+        reasons.append(f"unusually large submission ({text_length} chars)")
 
-        _log_activity(user_id, features, is_anomaly)
+    # Guardrail 2: High risk score on cold start
+    if risk_score >= HIGH_RISK_THRESHOLD:
+        is_anomaly = True
+        reasons.append(f"unusually high risk score ({risk_score})")
 
-        if is_anomaly:
-            reasons = []
-            if hour < 6 or hour > 21:
-                reasons.append(f"unusual hour ({hour}:00)")
-            if text_length > 1000:
-                reasons.append(f"unusually large submission ({text_length} chars)")
-            if risk_score > 80:
-                reasons.append(f"unusually high risk score ({risk_score})")
-            reason = "; ".join(reasons) if reasons else "deviates from typical usage pattern (new user, no baseline yet)"
-            return {"is_anomaly": True, "reason": reason}
+    # Guardrail 3: Off-hours scan
+    if hour < 6 or hour > 21:
+        is_anomaly = True
+        reasons.append(f"unusual scan hour ({hour}:00)")
 
-        return {"is_anomaly": False, "reason": "within typical usage pattern (new user, no baseline yet)"}
+    # Fallback model prediction
+    if MODEL_LOADED:
+        try:
+            prediction = _model.predict([features])[0]  # -1 = anomaly, 1 = normal
+            if prediction == -1:
+                is_anomaly = True
+                if not reasons:
+                    if text_length > 500:
+                        reasons.append(f"submission length ({text_length} chars) deviates from typical usage")
+                    elif risk_score > 30:
+                        reasons.append(f"elevated risk score ({risk_score}) deviates from typical pattern")
+                    else:
+                        reasons.append("deviates from typical usage pattern (new user, no baseline yet)")
+        except Exception as e:
+            print(f"[anomaly] Inference error: {e}")
 
-    except Exception as e:
-        print(f"[anomaly] Inference error: {e}")
-        return {"is_anomaly": False, "reason": "anomaly check failed"}
+    _log_activity(user_id, features, is_anomaly)
+
+    reason = "; ".join(reasons) if is_anomaly else "within typical usage pattern (new user, no baseline yet)"
+    return {
+        "is_anomaly": is_anomaly,
+        "reason": reason,
+        "baseline_count": len(history),
+        "baseline_required": MIN_HISTORY_FOR_BASELINE,
+    }
 
 
 if __name__ == "__main__":

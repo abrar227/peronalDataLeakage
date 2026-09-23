@@ -12,8 +12,13 @@
   <h1>🔍 Data Leakage Detector</h1>
 
   <div id="drop-zone">
-    📂 Drag & Drop a file or Click to Upload
-    <input type="file" id="file-input" hidden>
+    📂 Drag & Drop a .txt or .pdf file, or Click to Upload
+    <input type="file" id="file-input" accept=".txt,.pdf" hidden>
+  </div>
+
+  <div class="session-bar" id="sessionBar">
+    <span id="sessionStatus">👤 Scans logged: 0 / 5 (Cold start - no baseline yet)</span>
+    <span id="userIdDisplay" style="font-family: monospace; font-size: 0.85em; opacity: 0.7;"></span>
   </div>
 
   <textarea id="text-input">John Doe works at Google.
@@ -21,7 +26,10 @@ Email: john@gmail.com
 Phone: +1 987-654-3210
 Location: New York</textarea>
 
-  <button onclick="scanText()">Scan Data</button>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="scanText()">Scan Data</button>
+    <button class="btn-secondary" onclick="resetSession()" title="Start fresh session with 0 previous scans">🔄 Reset Session</button>
+  </div>
 
   <div id="loading" class="hidden">⏳ Scanning...</div>
 
