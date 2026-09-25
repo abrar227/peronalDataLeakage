@@ -37,13 +37,10 @@ def extract_text_from_pdf(file):
     return text
 
 
-def run_all_detectors(text: str, user_id: str) -> dict:
-    """
-    Runs rule-based + NLP detectors, combines findings, calls the BERT
-    contextual classifier, computes a risk score, and checks whether
-    this submission's behavior (text volume, time of day, resulting
-    risk score) looks anomalous compared to normal usage patterns.
-    """
+import functools
+
+@functools.lru_cache(maxsize=128)
+def _analyze_text(text: str):
     pattern_findings = rule_based.detect_patterns(text)
     entity_findings = nlp_contextual.extract_entities(text)
 
@@ -52,14 +49,22 @@ def run_all_detectors(text: str, user_id: str) -> dict:
     dl_result = deep_learning.predict(text)
     risk = calculate_risk(combined, dl_result)
 
-    # Only run LIME explanation when it's actually useful - i.e. when
-    # BERT flagged this as sensitive. LIME needs many forward passes
-    # through BERT, so skip it entirely for non-sensitive verdicts to
-    # keep the app responsive.
+    # Only run LIME explanation when it's actually useful
     if dl_result.get("label") == "sensitive":
         explanation = explainability.explain_prediction(text)
     else:
         explanation = {"available": False, "top_words": [], "summary": "Not applicable — text not flagged as sensitive."}
+        
+    return combined, dl_result, risk, explanation
+
+def run_all_detectors(text: str, user_id: str) -> dict:
+    """
+    Runs rule-based + NLP detectors, combines findings, calls the BERT
+    contextual classifier, computes a risk score, and checks whether
+    this submission's behavior (text volume, time of day, resulting
+    risk score) looks anomalous compared to normal usage patterns.
+    """
+    combined, dl_result, risk, explanation = _analyze_text(text)
 
     anomaly_result = anomaly.check_anomaly(
         user_id,
@@ -183,6 +188,13 @@ def upload():
     result = run_all_detectors(text, get_user_id())
     result["highlighted_text"] = highlight_text(text, result)
     return jsonify(result)
+
+
+@app.route("/reset", methods=["POST"])
+def reset():
+    session.pop("user_id", None)
+    return jsonify({"success": True})
+
 
 
 if __name__ == "__main__":

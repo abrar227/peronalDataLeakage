@@ -221,7 +221,7 @@ def _check_against_user_baseline(history, text_length, risk_score):
     return {
         "is_anomaly": is_anomaly,
         "reason": reason,
-        "baseline_count": len(history),
+        "baseline_count": len(history) + 1,
         "baseline_mean_risk": round(float(risk_mean), 1),
         "baseline_mean_length": round(float(length_mean), 1),
     }
@@ -294,7 +294,7 @@ def check_anomaly(user_id: str, event_metadata: dict) -> dict:
     return {
         "is_anomaly": is_anomaly,
         "reason": reason,
-        "baseline_count": len(history),
+        "baseline_count": len(history) + 1,
         "baseline_required": MIN_HISTORY_FOR_BASELINE,
     }
 
