@@ -1,6 +1,17 @@
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
 const textInput = document.getElementById("text-input");
+
+// Fallback for cached index.html: inject drop-zone-text span if it doesn't exist
+if (!document.getElementById("drop-zone-text") && dropZone && fileInput) {
+    dropZone.innerHTML = "";
+    const span = document.createElement("span");
+    span.id = "drop-zone-text";
+    span.innerHTML = "📂 Drag & Drop a .txt or .pdf file, or Click to Upload";
+    dropZone.appendChild(span);
+    dropZone.appendChild(fileInput);
+}
+
 const resultBox = document.getElementById("resultBox");
 const loading = document.getElementById("loading");
 const riskEl = document.getElementById("risk");
@@ -27,6 +38,8 @@ const COUNT_ELEMENT_IDS = {
     locations: "location-count",
 };
 
+let selectedFile = null;
+
 dropZone.onclick = () => fileInput.click();
 
 dropZone.ondragover = (e) => {
@@ -37,12 +50,29 @@ dropZone.ondragleave = () => dropZone.classList.remove("drag-active");
 dropZone.ondrop = (e) => {
     e.preventDefault();
     dropZone.classList.remove("drag-active");
-    if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files[0]) {
+        selectedFile = e.dataTransfer.files[0];
+        document.getElementById("drop-zone-text").innerHTML = `📄 <b>${selectedFile.name}</b> ready to scan`;
+        textInput.value = ""; // Clear text box when file is selected
+    }
 };
 
 fileInput.onchange = () => {
-    if (fileInput.files[0]) uploadFile(fileInput.files[0]);
+    if (fileInput.files[0]) {
+        selectedFile = fileInput.files[0];
+        document.getElementById("drop-zone-text").innerHTML = `📄 <b>${selectedFile.name}</b> ready to scan`;
+        textInput.value = ""; // Clear text box when file is selected
+    }
 };
+
+// Clear file selection if user types in the text box
+textInput.addEventListener('input', () => {
+    if (selectedFile) {
+        selectedFile = null;
+        fileInput.value = "";
+        document.getElementById("drop-zone-text").innerHTML = `📂 Drag & Drop a .txt or .pdf file, or Click to Upload`;
+    }
+});
 
 // Renders a category's matches as "value (NN%)" chips, or "None".
 // Accepts either the new {value, confidence} objects or plain strings,
@@ -60,8 +90,13 @@ function formatMatches(list) {
 }
 
 function scanText() {
+    if (selectedFile) {
+        uploadFile(selectedFile);
+        return;
+    }
+
     const text = textInput.value.trim();
-    if (!text) return alert("Enter text");
+    if (!text) return alert("Enter text or select a file to scan.");
 
     showLoading();
 
@@ -86,7 +121,13 @@ function uploadFile(file) {
         body: formData
     })
     .then(res => res.json())
-    .then(displayResult)
+    .then(data => {
+        // Reset file selection after successful scan
+        selectedFile = null;
+        fileInput.value = "";
+        document.getElementById("drop-zone-text").innerHTML = `📂 Drag & Drop a .txt or .pdf file, or Click to Upload`;
+        displayResult(data);
+    })
     .catch(err => alert(err));
 }
 
@@ -185,4 +226,39 @@ function displayResult(data) {
     }
 
     highlightedTextEl.innerHTML = data.highlighted_text || "";
+
+    // Update the session tracker in the UI
+    if (data.anomaly) {
+        const count = data.anomaly.baseline_count || 0;
+        const required = data.anomaly.baseline_required || 5;
+        const statusEl = document.getElementById("sessionStatus");
+        
+        if (statusEl) {
+            if (count >= required) {
+                statusEl.innerText = `👤 Scans logged: ${count} (Personal baseline active)`;
+            } else {
+                statusEl.innerText = `👤 Scans logged: ${count} / ${required} (Cold start - no baseline yet)`;
+            }
+        }
+    }
+}
+
+function resetSession() {
+    fetch("/reset", { method: "POST" })
+    .then(res => res.json())
+    .then(() => {
+        document.getElementById("sessionStatus").innerText = "👤 Scans logged: 0 / 5 (Cold start - no baseline yet)";
+        
+        // Clear previous results
+        resultBox.classList.add("hidden");
+        textInput.value = "John Doe works at Google.\nEmail: john@gmail.com\nPhone: +1 987-654-3210\nLocation: New York";
+        selectedFile = null;
+        fileInput.value = "";
+        
+        const textSpan = document.getElementById("drop-zone-text");
+        if (textSpan) {
+            textSpan.innerHTML = `📂 Drag & Drop a .txt or .pdf file, or Click to Upload`;
+        }
+    })
+    .catch(err => alert("Error resetting session: " + err));
 }
