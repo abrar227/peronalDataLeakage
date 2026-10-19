@@ -1,0 +1,176 @@
+\documentclass{beamer}
+
+\usepackage[british]{babel}
+\usepackage{graphicx,hyperref,ru,url}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+\usepackage{ragged2e} 
+\usepackage[center]{caption}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,fit}
+\usepackage{fontawesome}
+
+\def\newblock{\hskip .11em plus .33em minus .07em}
+\captionsetup{justification = raggedright, singlelinecheck = false}
+\captionsetup[subfigure]{justification=centering,singlelinecheck=false}
+
+\definecolor{blueone}{RGB}{26,123,242}
+\setbeamercolor{titlelike}{bg=blueone}
+
+\makeatother
+
+\setbeamertemplate{section in toc}
+{\leavevmode\leftskip=5ex%
+  \llap{%
+    \usebeamerfont*{section number projected}%
+    \usebeamercolor{section number projected}%
+    \begin{pgfpicture}{-1ex}{0ex}{2.7ex}{4ex}
+      \color{bg}
+      \pgfpathcircle{\pgfpoint{0pt}{.8ex}}{1.9ex}
+      \pgfusepath{fill}
+      \pgftext[base]{\color{fg}\inserttocsectionnumber}
+    \end{pgfpicture}\kern1.25ex%
+  }%
+  \inserttocsection\par}
+\setbeamertemplate{subsection in toc}
+  {\leavevmode\leftskip=2em$\bullet$\hskip1em\inserttocsubsection\par}
+ 
+\setbeamertemplate{frametitle continuation}{}  
+
+\title{INTELLIGENT PERSONAL DATA LEAKAGE DETECTION SYSTEM USING DEEP LEARNING AND RULE-BASED ANALYSIS}
+
+\author{\textbf{ABRAR NASSER} \\ \textit{TCR25MCA-2003\\} \vspace{0.6cm}     
+    Mini Project  \\ 
+ \vspace{13mm}     
+    Guided By: \\
+ \textbf{Prof. Maria Sofia S} \\
+    \\
+    \vspace{0.3cm}
+    Department of Computer Applications\\
+}
+
+\date{}
+\setbeamertemplate{caption}[numbered]
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Outline}
+\setlength{\parskip}{1pt}   
+\setlength{\itemsep}{2pt}   
+\tableofcontents[
+    sectionstyle=show/show,     
+    subsectionstyle=hide,       
+    subsubsectionstyle=hide
+]
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Introduction}
+\begin{itemize}
+  \justifying
+  \item Rapid growth of digital communication platforms (email, cloud storage, messaging, enterprise systems) has increased the risk of personal data leakage.
+  \item Sensitive information such as passwords, financial data, PII, and confidential organizational data is often unintentionally or maliciously exposed.
+  \item Rule-based and signature-based systems detect only predefined patterns and lack context awareness.
+  \item Conventional machine learning models lack deep contextual understanding of unstructured text.
+  \item Encryption and access control mechanisms fail to prevent insider threats once legitimate access has been granted.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Introduction - Objectives}
+\textbf{Objectives:}
+\vspace{0.3cm}
+
+To design an Intelligent Personal Data Leakage Detection System that combines rule-based filtering, transformer-based NLP contextual analysis, deep learning (LSTM/CNN) pattern detection, and anomaly-based insider-threat detection within a single hybrid pipeline, accompanied by an explainable AI layer so that every detection decision can be understood and acted upon by a security analyst.
+\end{frame}
+
+\section{System Architecture}
+\begin{frame}{System Architecture}
+\begin{figure}
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+  node distance=1cm and 0.2cm,
+  box/.style={draw, rectangle, align=center, minimum width=2.5cm, minimum height=1cm, fill=gray!10, rounded corners=2pt},
+  arrow/.style={-latex, thick}
+]
+  % Adding the requested User icon (\faUser)
+  \node[box] (user) {\faUser\ User};
+  
+  \node[box, below=0.8cm of user] (ui) {User Interface / \\ Input Handling Module};
+  \node[box, right=2cm of ui] (behav) {Behavioural / Access Data};
+  
+  \node[box, below left=1.2cm and -1cm of ui] (rule) {Rule-Based \\ Filtering Module};
+  \node[box, right=0.3cm of rule] (nlp) {NLP-Based \\ Contextual Analysis \\ Module};
+  \node[box, right=0.3cm of nlp] (dl) {Deep Learning-Based \\ Pattern Detection Module};
+  \node[box, right=0.3cm of dl] (anomaly) {Anomaly \\ Detection Module};
+
+  \node[box, below=1.5cm of nlp] (risk) {Risk Scoring Module};
+  \node[box, below=0.6cm of risk] (xai) {Explainable AI Module};
+  \node[box, below=0.6cm of xai] (monitor) {Monitoring \& Alert Module};
+  \node[box, below=0.6cm of monitor] (analyst) {Security Analyst / \\ Dashboard};
+
+  \draw[arrow] (user) -- (ui);
+  \draw[arrow] (ui) -- (rule);
+  \draw[arrow] (ui) -- (nlp);
+  \draw[arrow] (ui) -- (dl);
+  \draw[arrow] (behav) -- (anomaly);
+  
+  \draw[arrow] (rule) |- (risk);
+  \draw[arrow] (nlp) -- (risk);
+  \draw[arrow] (dl) |- (risk);
+  \draw[arrow] (anomaly) |- (risk);
+  
+  \draw[arrow] (risk) -- (xai);
+  \draw[arrow] (xai) -- (monitor);
+  \draw[arrow] (monitor) -- (analyst);
+\end{tikzpicture}
+}
+\caption{System Architecture of the Proposed System}
+\end{figure}
+\end{frame}
+
+\begin{frame}{System Architecture Description}
+\begin{itemize}
+  \item The User submits text or documents, which pass through the User Interface Module for validation.
+  \item Validated input is analysed in parallel by the Rule-Based Filtering, NLP-Based Contextual Analysis and Deep Learning-Based Pattern Detection modules.
+  \item The Anomaly Detection Module separately monitors behavioural data for insider-threat indicators.
+  \item All outputs converge at the Risk Scoring Module, followed by the Explainable AI Module and the Monitoring \& Alert Module, before reaching the Security Analyst via the dashboard.
+\end{itemize}
+\end{frame}
+
+\section{Data Flow Diagram}
+\begin{frame}{Data Flow Diagrams - Level 0}
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+  node distance=3cm,
+  box/.style={draw, rectangle, align=center, minimum width=2cm, minimum height=1cm, fill=gray!10},
+  circle/.style={draw, circle, align=center, minimum width=3.5cm, fill=blue!5},
+  arrow/.style={-latex, thick}
+]
+  \node[box] (user) {User};
+  \node[circle, right=of user] (sys) {0 \\ Intelligent Personal \\ Data Leakage \\ Detection System};
+  \node[box, right=of sys] (analyst) {Security Analyst};
+
+  \draw[arrow] (user) -- node[above, align=center, font=\scriptsize] {Text / Document \\ Input} (sys);
+  \draw[arrow] (sys) -- node[above, align=center, font=\scriptsize] {Risk Score, Alert \& \\ Explanation Report} (analyst);
+\end{tikzpicture}
+\caption{DFD Level 0}
+\end{figure}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}{Conclusion}
+\begin{itemize}
+  \justifying
+  \item This project proposes an Intelligent Personal Data Leakage Detection System that unifies rule-based filtering, transformer-based NLP contextual analysis, deep learning pattern detection, and behavioural anomaly detection within a single hybrid pipeline.
+  \item Combining these complementary techniques allows the system to catch both structured, known leakage patterns and unstructured, previously unseen ones – while an explainable AI layer keeps every decision transparent and actionable for a security analyst.
+  \item Overall, the system demonstrates how content-level and behaviour-level signals can be brought together in one pipeline to detect personal data leakage more comprehensively than any single technique used in isolation.
+\end{itemize}
+\end{frame}
+
+\end{document}

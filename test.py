@@ -1,8 +1,5 @@
-from detector import detect_sensitive_data
-
-text = "My email is abrar@gmail.com and phone is 9876543210"
-
-result = detect_sensitive_data(text)
-
-print("Detected Data:")
-print(result)
+from pypdf import PdfReader
+reader = PdfReader('test_overlay.pdf')
+text = reader.pages[0].extract_text()
+print("--- PAGE 1 of test ---")
+print(text[:200])

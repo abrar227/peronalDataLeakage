@@ -1,0 +1,146 @@
+\chapter{SYSTEM IMPLEMENTATION}
+\hspace{0.5cm}
+The system implementation phase is aimed at realizing the AI-Powered Code Documentation Generator design. At this stage, full development occurs, including the implementation of all system modules, such as the code parser, structural feature extraction algorithm, semantic understanding algorithm and automatic documentation generator. Each module is developed and implemented independently, allowing developers to make changes or enhancements without affecting other modules. This approach ensures high scalability, as modifications and additions can be implemented easily while maintaining the integrity and efficiency of the system.
+\section{Setup Development environment}
+\hspace{0.5cm}The importance of having an efficient development environment cannot be ignored when implementing and executing the system. In the context of the current system, the VS Code editor is chosen as the development environment for its lightweight structure and easy integration with different tools. The backend is designed with the Python 3.8 language because of the numerous benefits that come with the use of this language when processing data and implementing machine learning algorithms. The HTML (HyperText Markup Language), CSS (Cascading Style Sheets) and JavaScript languages are used to implement the frontend of the system to make the interaction experience of the user more engaging. The backend server has been implemented using the Flask web framework, which helps in creating RESTful APIs for the smooth communication between the frontend and backend modules.
+To support the implementation of various functionalities, the following Python libraries are installed and configured:\begin{itemize}
+\item \textbf{Flask} -- This tool is used in constructing the backend server as well as the REST (Representational State Transfer) API endpoints. It manages all requests made by users, like uploading files. This too starts the code analysis and sends back the documentation that is created.
+
+\item \textbf{Tree-sitter} -- This tool is used for parsing source code and converting it into ASTs, enabling accurate syntactic analysis for multiple programming languages. It divides the source code into structural elements such as functions, classes and other components.
+
+\item \textbf{Tree-sitter-languages} -- This library provides built-in language support that extends Tree-sitter’s capabilities, allowing the system to support multiple programming languages such as Python, Java, JavaScript, C, C++, Go, Rust and Kotlin without the need for separate parser configurations for each language.
+
+\item \textbf{Markdown} -- A Markdown library provides tools to parse, render and manipulate Markdown content programmatically.  
+Such libraries support creating dynamic documentation, reports or web content from plain text. 
+They simplify integrating Markdown-based documentation into automated systems and applications.
+
+\item \textbf{Networkx} -- This tool is used to construct and analyze graph structures derived from the parsed code helping to achieve a deeper contextual understanding of the code.
+\end{itemize}
+\section{User Interface}
+\hspace{0.5cm} The User Interface is built as a single-page application with HTML, CSS and JavaScript, enabling users to upload source code files, folders or even input a public Git repository URL. The User Interface supports three modes: Single File, Folder and Mixed.
+
+\par The frontend sends a request to the \textit{/analyze} endpoint to communicate with the Flask-based backend. Once the request is received, the backend will process the input by calling the core function \textit{analyze\_path()}. This function will determine whether the input is a file, folder or Git URL and then route it to the appropriate analysis pipeline. If it is a Git URL, the repository will be cloned to a temporary directory and then cleaned up. If it is a local input, the function will directly call either the single-file analysis pipeline or the project-level analysis pipeline based on whether the path is pointing to a file or a directory.
+
+\par The generated documentation will be displayed in the browser as formatted HTML using the marked.js library. Users will also be able to download the complete generated Markdown files as a ZIP package using the JSZip library.
+
+\section{Language Detection}
+\hspace{0.5cm}
+The next step is to recognize the programming language of each uploaded source file based on its file extension. This is done by utilizing an extension-to-language mapping defined in \textit{language\_config.py}, which allows the system to support twelve programming languages including Python, Java, JavaScript, TypeScript, C, C++, Go, Rust, PHP, Ruby, Kotlin and C#.
+
+\par During processing, the file extension is extracted from the file path, which is converted to lowercase for standardization purposes, as different operating systems have different capitalization standards. After that, the programming language is detected based on the predefined file extension mapping.
+
+\par In order to ensure robustness, the unsupported file types will be skipped during the traversal of the folders. Also, empty files will be removed prior to the start of the analysis process. Moreover, the Git metadata directories such as \textit{.git} will be skipped during the traversal of the folders using the normalized paths where backslashes will be replaced with forward slashes in order to support both the Windows and Linux platforms, thus preventing the Git source code from being treated as source code.
+
+\section{Text Feature Extraction}
+\hspace{0.5cm}
+In this stage, lightweight textual features are obtained from individual source files without reference to the AST, aiming to identify basic structural properties of the code. The features are calculated through text-based analysis in \textit{text\_features.py} without any reference to language parsing or grammar.
+
+\par The function reads the source file in a safe manner with UTF (Unicode Transformation Format)-8 encoding and ignores decoding errors for robustness across different file types and legacy codebases. In case the file is invalid or cannot be read, an empty dictionary is returned.
+
+\par The features that are extracted are the raw counts, which include the total number of lines, the total number of characters, the number of import statements, the number of class definitions and the number of function definitions. These features offer an overview of the source file.
+
+\par These metrics are attached to every function record as a \textit{metrics} field. They help in the formation of the unified fused representation in the downstream modules.
+
+\section{AST Analysis}
+\hspace{0.5cm}
+In this stage, structural information is obtained through structural feature extraction, where each source file is parsed to an AST with the help of the tree-sitter framework, facilitating precise analysis for all fourteen programming languages.
+
+\par The entry point is \textit{tree\_sitter\_adapter.py} where the programming language is resolved based on the file extension, the source file is read in a safe manner with UTF-8 encoding and the parse tree is generated along with a source representation at the byte level to accurately extract the text within nodes. Node type names such as function definitions, class declarations and call expressions for different languages are read from \textit{language\_config.py} to ensure that the logic itself doesn’t have any explicit language checks.
+
+\par The AST is processed in \textit{ast\_graph.py} with a two-pass strategy. The first pass traverses the entire AST tree structure to collect all the function names, class names and import symbols in the \texttt{known\_names} set. The \textit{known\_names} set will be used in the second pass of the AST traversal process to differentiate calls to functions defined within the project codebase from calls to external library code. The \textit{known\_names} set is supplemented with symbols obtained from all the files in the codebase in the global pre-pass in \textit{analyzer.py}.
+
+\par The second pass carries out full per-function extraction. For a function, the system extracts the function's name, class membership, parameters, return type, internal function calls, external function calls, local variables and string literals. For function names, a four-strategy cascade is used to accommodate the different structural characteristics of programming languages. Most languages rely on a direct field lookup for function names, while the languages C and C++ rely on a declarator chain walk and a shallow identifier scan and a deep recursive scan serve as a fallback.
+
+\par Although function calls are identified during this process, the caller-callee relation is not stored as a string. Rather, every identified internal call is directly added to the NetworkX graph by invoking \textit{graph.add\_edge()}. This graph is the sole source of all call relation data. The extracted function-level metadata is stored in the \textit{metadata} dictionary and passed to the next stage, Graph Analysis.
+
+
+\section{Graph Analysis}
+\hspace{0.5cm}
+Within this stage, the semantic graph created during the AST traversal process is examined to determine higher-level structural information about the codebase. The graph is built using the NetworkX library, in which the nodes of the graph represent the functions and the edges represent the caller-callee relations. The graph is the single source of truth for all call relationship data, which means the data about the relations of the functions is not obtained from intermediate lists of strings or the AST.
+
+\par The call relationships in the graph are obtained by using successor queries on the graph, where the outgoing edges on a function node directly provide the list of functions it calls. This method ensures consistency throughout the system and avoids the need for string parsing and redundant storage.
+
+\par In addition to storing the relationships between the entities, the graph is used to find four different structural characteristics in the code. The entry points in the code are the set of functions that have no incoming edges but have outgoing edges; in other words, these are the functions that are never called by any other function in the code but start the calls themselves. The dead functions in the code are the set of functions that have neither incoming nor outgoing edges; in other words, these are the functions that are never called in the code and never start any calls either. A cross-file check is done before determining the dead or entry point functions in the code.
+
+\par Direct recursion is identified through self-loop edges in the graph, where a function has an edge pointing back to itself. Mutual and chain recursion are detected using cycle detection algorithms, which identify groups of functions forming circular call chains of length greater than one. Critical functions are determined by ranking nodes based on their in-degree, where functions with a higher number of incoming edges are considered the most depended-upon in the codebase.
+\par These features of the derived graphs are included in each function’s record and passed on to the Feature Fusion and Documentation Generation stages, which enrich the LLM prompt with architectural information that cannot be automatically inferred from the AST features.
+
+\section{Feature Fusion}
+\hspace{0.5cm}
+At this stage, features extracted by the Text Feature Extraction, AST Analysis and Graph Analysis modules are integrated into a single structure for each function. This integration encompasses the structural, relational and contextual aspects of the code in a single structure, which is used by all the modules.
+
+\par The fusion is achieved in \textit{analyzer.py} through the \textit{\_build\_record()} function, which constructs one record per function by combining three different sources of information. The information from the AST is used for the structural facts about each function, including its name, its membership in a class, parameters, return type, external calls, local variables, string literals and imports. The information from the graph is used for the relational facts, including the list of internal calls and the formatted caller-callee relationship strings, both of which are obtained directly from graph successor queries. The text features include the contextual metrics, including the raw counts used by the LLM..
+
+% \par The graph acts as the single source of truth for all call relationship data throughout the fusion process. Rather than storing call relationships as strings during the AST walk, they are derived at record construction time by querying the graph, which eliminates redundancy and ensures that the relationships stored in the record always reflect the actual graph structure.
+
+% \par The complete graph analysis result from \texttt{analyze\_graph()} is also embedded in each function record. This includes entry points, dead functions, direct recursion, mutual cycles, most critical functions, and the longest execution path — all of which are used in the documentation generation stage to provide architectural context to the LLM.
+
+\par The resulting fused records are serialized into \textit{semantic\_records.json}, which is used as the persistent interface between the analysis pipeline and the module for generating the documentation.
+
+
+\section{Documentation Generation}
+\hspace{0.5cm}
+The Documentation Generation Module uses the open-source LLM DeepSeek, which is hosted locally via Ollama, to create structured Markdown documentation from the integrated code records. The model is accessed via the Ollama HTTP API with a low temperature of 0.1 to ensure consistent and factually reliable outputs. The \textit{stream: false} parameter ensures that the complete response is returned as a single JSON (JavaScript Object Notation) payload, simplifying downstream processing.
+
+\par For each function, a structured fact block is created from the fused record and passed into the LLM as a prompt. This fact block combines all three sources of features into one line of context.
+
+
+\par All documents are generated in parallel by a \textit{ThreadPoolExecutor} with up to six concurrent workers, greatly improving the total generation time for large projects. If a document does not generate correctly, it will have a stub so that the pipeline always produces a complete output even in the presence of individual failures
+
+
+\par The module produces four types of Markdown documentation artifacts per run of the analysis:
+\begin{itemize}
+\item \textbf{README.md} for project overview, description, tech stack, project structure, etc.
+\item \textbf{architecture\_overview.md} for component responsibilities, data flow between files, module dependencies, etc.
+\item \textbf{File-wise .md files} for file-wise information like import information, member variables, function intents, parameters, return types, function call relationships, entry points, dead code, recursion and cycles.
+\item \textbf{recent\_changes.md} for displaying Git commit history with author information and message for every commit, if input is provided as a Git repository URL.
+\end{itemize}
+
+\par The implementation phase has been successfully completed to transform the proposed design into a fully functional form of the AI-Powered Code Document Generator. All the modules, ranging from language detection and AST parsing to graph analysis, feature fusion and LLM-based generation, have been implemented and integrated to function cohesively in a complete system. Since the system has been fully operational for a range of programming languages and input types, the discussion will move on to the evaluation stage. The next chapter will cover the results achieved by running the system on a range of projects and a discussion on the quality, accuracy, and completeness of the generated documentation.
+
+% \begin{lstlisting}[language=python]
+% from sentence_transformers import SentenceTransformer, util
+
+% model = SentenceTransformer('all-MiniLM-L6-v2')
+
+% def map_profile_to_form(profile, form_fields):
+%     mapped = {}
+%     for field, value in profile.items():
+%         best_match = None
+%         best_score = -1
+%         for form_field in form_fields:
+%             score = util.cos_sim(
+%                 model.encode(field, convert_to_tensor=True),
+%                 model.encode(form_field, convert_to_tensor=True)
+%             )
+%             if score > best_score:
+%                 best_score = score
+%                 best_match = form_field
+%         mapped[best_match] = value
+%     return mapped
+% \end{lstlisting}
+
+% \section{Form Auto-Filling}
+% \hspace{0.3cm}
+% The final mapped data is converted to JSON and sent to the frontend. 
+% A JavaScript script runs on page load to automatically fill the form fields 
+% with the extracted details.
+
+% \begin{lstlisting}[language=javascript]
+% <script>
+%   const filledData = {{ final_form_data | tojson }};
+%   window.onload = () => {
+%     for (let key in filledData) {
+%       const el = document.querySelector(`[name="${key}"]`);
+%       if (el) el.value = filledData[key];
+%     }
+%   };
+% </script>
+% \end{lstlisting}
+
+
+% \hspace{0.3cm} This module-based implementation ensures flexibility to add more document types in the future while keeping extraction accurate and rule-based.
+
+% Thus, the system completes the pipeline: document upload $\rightarrow$ 
+% text extraction (PDF-first, OCR for images if required)$\rightarrow$ field extraction $\rightarrow$ consolidation $\rightarrow$ 
+% form field mapping $\rightarrow$ auto-filling.

@@ -1,0 +1,15 @@
+﻿\documentclass[12pt,a4paper,oneside]{report}
+\usepackage{pdfpages}
+\usepackage{eso-pic}
+
+\begin{document}
+\AddToShipoutPictureFG{
+  \put(98, 795){\makebox(0,0)[l]{\small Intelligent Personal Data Leakage Detection System}}
+  \put(98, 785){\rule{417pt}{0.5pt}}
+  \put(98, 60){\rule{417pt}{0.5pt}}
+}
+\includepdf[pages=-, fitpaper=true]{Intelligent_Personal_Data_Leakage_Detection_System_Report (2).pdf}
+\ClearShipoutPictureFG
+\includepdf[pages=-, fitpaper=true]{Chapter5_System_Design_updated.pdf}
+\includepdf[pages=-, fitpaper=true]{build_new_chapters.pdf}
+\end{document}

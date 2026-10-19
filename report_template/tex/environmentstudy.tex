@@ -1,0 +1,108 @@
+\chapter{ENVIRONMENTAL STUDY}
+
+\hspace{0.5cm}
+The environmental settings of the project are discussed in this chapter as it is essential in ensuring that the AI-Powered Code Document Generator system is successfully developed, implemented and assessed. Environment of the project is important because it helps system perform its functions effectively while ensuring that all its component are integrated. 
+
+Environment entails both hardware and software pre-requisites that may be required by the system to operate successfully under ideal scenarios. It emphasizes all the tools, frameworks and platforms used during system development. The configuration of these elements optimizes the performance of the system. 
+
+\section{System Configuration}
+\hspace{0.5cm}
+System configuration means the collection of hardware and software components necessary for developing and executing the system. The proper configuration helps to ensure that the system works efficiently and effectively. Source code is processed easily with the help of the right configuration. At the same time, it helps ensure good interaction between all modules within the system.
+
+Operations that the system may perform include parsing, AST creation, feature extraction, and communication with LLM for documentation generation. Therefore, system configuration, based on an adequately developed environment, is essential for ensuring better overall system performance and less processing time during the testing and implementation phases so that, eventually, a system can run without glitches and lags. 
+
+\subsection{Hardware Requirements}
+\hspace{0.5cm}
+The hardware requirements outline the minimum resources necessary to operate the system. These resources are crucial for performing code analysis, processing tasks and running machine learning operations.
+
+The key hardware requirements are detailed as follows:
+
+
+\begin{itemize}
+\item \textbf{Processor}: Intel\textsuperscript{\textregistered} Core\textsuperscript{\texttrademark} i5 Processor / AMD Ryzen\textsuperscript{\texttrademark} 5 Processor or higher, to efficiently handle code processing tasks.
+
+\item \textbf{Memory}: Minimum 8 GB RAM, to ensure smooth execution of analysis and model operations.
+
+\item \textbf{Storage}: 50–100 GB of free disk space, for storing code files and generated outputs.
+\end{itemize}
+
+\subsection{Software Requirements}
+\hspace{0.5cm}
+The requirements for software specify the necessary platforms, languages and libraries that will be used in running the system. The use of these tools, activities like parsing, integration and documentation become easy. Compatibility assurance is relevant to ensure that the various components of the system communicate effectively. 
+
+
+The key software requirements are detailed as follows:
+\begin{itemize}
+    \item \textbf{Operating System}: Windows 10, Ubuntu 20.04 LTS or macOS, to support cross-platform execution.
+    
+    \item \textbf{Programming Language}: Python 3.8 or higher, used for implementing the entire system.
+    
+    \item \textbf{Version Control System}: Git (optional), for managing repository-based inputs and commit history.
+    
+    \item \textbf{Required Python Libraries}:
+   \begin{itemize}
+\item Tree-sitter – a parser that converts source code into an AST, enabling precise analysis of functions, classes and other structures.
+\item Markdown – a lightweight markup language for generating clear and easily readable documentation from code.
+\item NetworkX – a Python library for creating and analyzing graphs, useful for visualizing relationships between functions, classes, and modules in source code.
+\end{itemize}
+\end{itemize}
+
+\subsection{Software Requirements for Development}
+\hspace{0.5cm}Besides the execution specifications, some indispensable are the tools for development, testing and maintenance. They assist in writing and debugging programs, as well as managing the code appropriately. Besides, the tools help in maintaining versions and assembling different systems together. 
+
+The key development software requirements for development are detailed as follows:
+\begin{itemize}
+    \item \textbf{Operating System}: Windows 10, Ubuntu 20.04 LTS or macOS, ensuring cross-platform compatibility.
+    
+    \item \textbf{Back End}: Python 3.8 or later, serving as the core implementation language.
+    
+    \item \textbf{IDE Used}: Visual Studio Code, used for development and debugging tasks.
+    
+    \item \textbf{Version Control}: Git, for managing source code and repositories.
+    
+    \item \textbf{Development Tools and Frameworks}:
+    \begin{itemize}
+        \item Tree-sitter -- for AST-based code analysis.
+        \item Large Language Model (Ollama DeepSeek) -- for generating documentation efficiently.
+    \end{itemize}
+\end{itemize}
+\section{Software Specification}
+\hspace{0.5cm}The following section provides a detailed description of different software components and technologies that are used to design the system under discussion. This is because each of the software components performs specific tasks that shall be useful when analyzing the code and preparing the documentation. Each software component is made to perform particular operations that are useful in code analysis and documentation preparation and the use of technologies is meant to ensure a smooth integration process. 
+
+\subsection{Python 3.8}
+\hspace{0.5cm}
+The choice of programming language for this project has been Python due to its ease-of-use, flexibility and the availability of community support for artificial intelligence and software analysis utilities. Code parsing, feature extraction, creation of graphs, interfacing with LLMs and the automation of documentation creation is done using Python. The large number of libraries that Python offers, including the NetworkX library for working with graphs and many utility libraries for working with files, helps in implementing difficult functionalities efficiently.
+
+
+\subsection{Visual Studio Code}
+\hspace{0.5cm}Visual Studio Code (VS Code) has been picked as the primary Integrated Development Environment (IDE) that will be used during development, management and system maintenance. The software offers a very efficient, powerful platform with full Python support and a multitude of development capabilities. These features include syntax highlighting, code suggestions, debugging tools, command prompt integration and many other features that aid in an organized and efficient software development process. 
+
+\par The editor provides a broad set of features including Python functionality, Git functionality and formatting utilities that make coding more efficient. The inbuilt versioning capabilities of the software enable the use of Git projects. In addition, the cross-platform interface provided by VS Code makes it possible to use it across various operating system platforms in developing, debugging and maintaining the proposed system.
+
+\subsection{Tree-sitter}
+\hspace{0.5cm}
+Tree-sitter is used as an important parser for parsing the code and creating its AST. Tree-sitter offers fast and incremental parsing abilities, making it easy to analyze the code efficiently. Tree-sitter is used to extract many code elements such as file, module, class, function, import and dependency based on the particular programming language. Moreover, Tree-sitter can handle several programming languages, which include Python, Java, C, C++, JavaScript, TypeScript, Go, Rust, Ruby, PHP and Kotlin.
+
+\par The code tree created via Tree-sitter is highly extensive and provides syntactical as well as semantical elements. Hence, this is beneficial in detecting functions together with arguments and return types with more accuracy. Therefore, the code tree serves as a foundation for further processing of the code by the remaining modules, such as graph generation and feature extraction, more efficiently. 
+
+\subsection{Large Language Model(LLM)}
+\hspace{0.5cm}LLM, is utilized to articulate representations of codes into a comprehensive, human-readable format of documentation that interprets and ensures the understanding of the code units correctly. The output is human readable and includes project summaries, architectural summaries and provides a summary for each function. 
+
+\par The LLM then uses its advanced linguistic comprehension to understand programming concepts and code relationships. It has the power to produce human-readable narratives that are brief in length and dependent on the context yet resembling in appearance to human-generated documentation. This structural and relational dual information guarantees correct, but more meaningful and understandable outputs. This helps to reduce human efforts in writing documents without losing the inconsistency and quality of documents produced. 
+
+
+\subsection{Git}
+\hspace{0.5cm}
+Git is used as the version control system for analyzing the structure of the repository and obtaining historical information regarding the code. This allows the system to work with entire projects by cloning repositories from remote sites, which eliminates manual uploading of separate files. Information at the commit level is also available, for example, for the production of documentation, such as a list of the latest changes. 
+
+\par This would enable the system to be able to identify the different types of changes through commits, thus being able to identify development patterns and get knowledge on how the code is being changed over time. All this would lead to context being better understood, thereby adding a layer of value to the kind of document that is being generated. Other than source code repositories, the system would also allow local source code directories to ensure flexibility with the various types of input sources. 
+
+\subsection{NetworkX}
+\hspace{0.5cm}
+It is used to create and analyze the graphs representing the relationships, function calls and dependencies in the code. NetworkX helps the system to model the code structure as a directed graph, where the functions are represented as nodes and the interactions are represented as edges. This allows the system to understand important parts of the program code, such as the starting point, recursion and any dependencies. The use of graph-based analysis increases the understanding of how the code operates. Additionally, the system uses graph analysis to perform complex evaluations of the code, enabling a better understanding of its critical components.
+
+\subsection{Markdown}
+\hspace{0.5cm}
+Markdown is used to generate structured and readable documentation files like readme files, to name a few module-level documentation. It makes use of simple formatting tools when producing documentation. Therefore, the resulting files are consistent and easy to read, as Markdown allows structuring of information in a clear way. They can be shared across different platforms without using special software (accessibility and usability are guaranteed). 
+\newline
+\par In this chapter, we have discussed in detail the requirements related to the hardware, software and development environment that are needed to build an AI-Powered Code Document Generator. These configurations and tools play an important role in ensuring that the process of analyzing code is effective and efficient. With the execution environment described, the next chapter on system analysis discusses the system requirements, functionality and feasibility of the solution.
